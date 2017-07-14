@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  id="hewz-plugins-im"
+  version="1.0.0">
+  <name>IM</name>
+
+  <js-module src="www/im.js" name="im">
+    <clobbers target="im" />
+  </js-module>
+
+  <!-- android -->
+  <platform name="android">
+    
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="IM">
+        <param name="android-package" value="hewz.plugins.im.IM" />
+      </feature>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/*">
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+      <uses-permission android:name="android.permission.CAMERA" />
+      <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+      <uses-permission android:name="android.permission.GET_TASKS" />
+      <uses-permission android:name="android.permission.INTERNET" />
+      <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+      <uses-permission android:name="android.permission.READ_LOGS" />
+      <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+      <uses-permission android:name="android.permission.RECORD_AUDIO" />
+      <uses-permission android:name="android.permission.VIBRATE" />
+      <uses-permission android:name="android.permission.WAKE_LOCK" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <!-- 【必须】消息收发service -->
+      <service
+          android:name="com.tencent.qalsdk.service.QalService"
+          android:exported="true"
+          android:process=":QALSERVICE" >
+      </service>
+      <service  
+          android:name="com.tencent.qalsdk.service.QalAssistService"  
+          android:exported="false"
+          android:process=":QALSERVICE" >
+      </service>   
+
+      <!-- 【必须】 离线消息广播接收器 -->
+      <receiver
+          android:name="com.tencent.qalsdk.QALBroadcastReceiver"
+          android:exported="false">
+          <intent-filter>
+              <action android:name="com.tencent.qalsdk.broadcast.qal" />
+          </intent-filter>
+      </receiver>
+      <receiver 
+          android:name="com.tencent.qalsdk.core.NetConnInfoCenter" android:process=":QALSERVICE">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+          </intent-filter>
+          <intent-filter>
+              <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+          </intent-filter>
+         <intent-filter>
+              <action android:name="android.intent.action.TIME_SET" />
+          </intent-filter>
+          <intent-filter>
+              <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+          </intent-filter>     
+
+          <!-- ImSDK 3.0.2 后添加 -->
+          <intent-filter>
+              <action android:name="com.tencent.qalsdk.service.TASK_REMOVED" />
+          </intent-filter>
+      </receiver>
+    </config-file>
+
+    <source-file src="src/android/IM.java" target-dir="src/hewz/plugins/im" />
+    <source-file src="src/android/IMHelper.java" target-dir="src/hewz/plugins/im" />
+
+    <source-file src="libs/android/imsdk.jar" target-dir="libs" />
+    <source-file src="libs/android/imsdk_msg_ext.jar" target-dir="libs" />
+    <source-file src="libs/android/imsdk_group_ext.jar" target-dir="libs" />
+    <source-file src="libs/android/imsdk_sns_ext.jar" target-dir="libs" />
+    <source-file src="libs/android/mobilepb.jar" target-dir="libs" />
+    <source-file src="libs/android/qalsdk.jar" target-dir="libs" />
+    <source-file src="libs/android/soload.jar" target-dir="libs" />
+    <source-file src="libs/android/tls_sdk.jar" target-dir="libs" />
+    <source-file src="libs/android/wup-1.0.0-SNAPSHOT.jar" target-dir="libs" />
+
+    <source-file src="libs/android/armeabi/lib_imcore_group_ext_gyp.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/lib_imcore_jni_gyp.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/lib_imcore_msg_ext_gyp.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/lib_imcore_sns_ext_gyp.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/libgnustl_shared.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/libqalcodecwrapper.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/libqalmsfboot.so" target-dir="libs/armeabi" />
+    <source-file src="libs/android/armeabi/libwtcrypto.so" target-dir="libs/armeabi" />
+
+    <source-file src="libs/android/armeabi-v7a/lib_imcore_group_ext_gyp.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/lib_imcore_jni_gyp.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/lib_imcore_msg_ext_gyp.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/lib_imcore_sns_ext_gyp.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/libgnustl_shared.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/libqalcodecwrapper.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/libqalmsfboot.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="libs/android/armeabi-v7a/libwtcrypto.so" target-dir="libs/armeabi-v7a" />
+
+    <source-file src="libs/android/arm64-v8a/lib_imcore_group_ext_gyp.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/lib_imcore_jni_gyp.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/lib_imcore_msg_ext_gyp.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/lib_imcore_sns_ext_gyp.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/libgnustl_shared.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/libqalcodecwrapper.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/libqalmsfboot.so" target-dir="libs/arm64-v8a" />
+    <source-file src="libs/android/arm64-v8a/libwtcrypto.so" target-dir="libs/arm64-v8a" />
+
+    <source-file src="libs/android/x86/lib_imcore_group_ext_gyp.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/lib_imcore_jni_gyp.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/lib_imcore_msg_ext_gyp.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/lib_imcore_sns_ext_gyp.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/libgnustl_shared.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/libqalcodecwrapper.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/libqalmsfboot.so" target-dir="libs/x86" />
+    <source-file src="libs/android/x86/libwtcrypto.so" target-dir="libs/x86" />
+
+    <source-file src="libs/android/x86_64/lib_imcore_group_ext_gyp.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/lib_imcore_jni_gyp.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/lib_imcore_msg_ext_gyp.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/lib_imcore_sns_ext_gyp.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/libgnustl_shared.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/libqalcodecwrapper.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/libqalmsfboot.so" target-dir="libs/x86_64" />
+    <source-file src="libs/android/x86_64/libwtcrypto.so" target-dir="libs/x86_64" />
+  </platform>
+
+</plugin>
