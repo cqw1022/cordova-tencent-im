@@ -3,8 +3,12 @@ package hewz.plugins.im;
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
+
+import com.tencent.imsdk.TIMElem;
+import com.tencent.imsdk.TIMElemType;
+import com.tencent.imsdk.TIMMessage;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -15,8 +19,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+
+import hewz.plugins.im.event.MessageEvent;
 
 /**
  * 腾讯云通信插件
@@ -25,7 +34,7 @@ import java.util.List;
  *
  */
 @SuppressWarnings("unused")
-public class IM extends CordovaPlugin {
+public class IM extends CordovaPlugin implements Observer{
 
 	private static final String LOG_TAG = "Plugin#IM";
 
@@ -42,6 +51,10 @@ public class IM extends CordovaPlugin {
 	static IM instance;
 	public IM() {
 		instance = this;
+	}
+
+	static void addObserver(){
+		MessageEvent.getInstance().addObserver(instance);
 	}
 
 	/**
@@ -69,7 +82,6 @@ public class IM extends CordovaPlugin {
 				LOG.e(LOG_TAG, "IM#unable to get im appid");
 				return false;
 			}
-			Bundle a = info.metaData;
 			int appid = info.metaData.getInt("IM.AppID");
 			IMHelper.initIMSdk(appid);
 		}
@@ -120,5 +132,45 @@ public class IM extends CordovaPlugin {
 	public void onDestroy() {
 		super.onDestroy();
 		LOG.d(LOG_TAG, "IM#destory");
+	}
+
+	@Override
+	public void update(Observable observable, Object data) {
+		if (observable instanceof MessageEvent && data instanceof TIMMessage) {
+			JSONObject mJson = new JSONObject();
+			TIMMessage msg = (TIMMessage) data;
+			try {
+				mJson.put("peer", msg.getConversation().getPeer());
+
+				boolean hasText = false;
+				List<TIMElem> elems = new ArrayList<TIMElem>();
+				for (int i = 0; i < msg.getElementCount(); ++i) {
+					elems.add(msg.getElement(i));
+					if (msg.getElement(i).getType() == TIMElemType.Text) {
+						hasText = true;
+					}
+				}
+				SpannableStringBuilder stringBuilder = MessageFactory.getString(elems, instance.cordova.getActivity().getApplicationContext());
+				if (!hasText) {
+					stringBuilder.insert(0, " ");
+				}
+				Log.i(LOG_TAG, stringBuilder.toString());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			String format = "window.im.onNewMessages(%s);";
+			final String js = String.format(format, mJson.toString());
+			instance.cordova.getActivity().runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (instance == null) {
+						Log.i(LOG_TAG, "instance is null");
+						return;
+					}
+					instance.webView.loadUrl("javascript:" + js);
+				}
+			});
+		}
 	}
 }

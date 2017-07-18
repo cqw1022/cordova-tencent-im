@@ -2,7 +2,7 @@
 
 腾讯云通信cordova/phonegap/ionic插件
 
-* 2017.07.5 集成最新云通信sdk v3.1.0
+* 集成最新云通信sdk v3.1.0
 
 # Install：
 	$ ionic plugin add https://github.com/hewz/cordova-tencent-im.git

@@ -1,7 +1,5 @@
 package hewz.plugins.im;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -29,8 +27,9 @@ import com.tencent.imsdk.ext.sns.TIMFriendshipProxyListener;
 import com.tencent.imsdk.ext.sns.TIMUserConfigSnsExt;
 
 import org.apache.cordova.CallbackContext;
-
 import java.util.List;
+
+import hewz.plugins.im.event.MessageEvent;
 
 import static hewz.plugins.im.IM.instance;
 
@@ -210,6 +209,9 @@ class IMHelper {
                     @Override
                     public void onSuccess() {
                         Log.i(tag, "initStorage succ");
+                        PushUtil.getInstance();
+                        MessageEvent.getInstance();
+                        IM.addObserver();
                     }
                 });
 
