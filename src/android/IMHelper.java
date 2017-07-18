@@ -1,5 +1,6 @@
 package hewz.plugins.im;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
@@ -12,6 +13,7 @@ import com.tencent.imsdk.TIMGroupMemberInfo;
 import com.tencent.imsdk.TIMGroupTipsElem;
 import com.tencent.imsdk.TIMLogLevel;
 import com.tencent.imsdk.TIMManager;
+import com.tencent.imsdk.TIMOfflinePushSettings;
 import com.tencent.imsdk.TIMRefreshListener;
 import com.tencent.imsdk.TIMSNSChangeInfo;
 import com.tencent.imsdk.TIMSdkConfig;
@@ -21,6 +23,7 @@ import com.tencent.imsdk.TIMUserStatusListener;
 import com.tencent.imsdk.ext.group.TIMGroupAssistantListener;
 import com.tencent.imsdk.ext.group.TIMGroupCacheInfo;
 import com.tencent.imsdk.ext.group.TIMUserConfigGroupExt;
+import com.tencent.imsdk.ext.message.TIMManagerExt;
 import com.tencent.imsdk.ext.message.TIMUserConfigMsgExt;
 import com.tencent.imsdk.ext.sns.TIMFriendshipProxyListener;
 import com.tencent.imsdk.ext.sns.TIMUserConfigSnsExt;
@@ -29,22 +32,24 @@ import org.apache.cordova.CallbackContext;
 
 import java.util.List;
 
+import static hewz.plugins.im.IM.instance;
+
 /**
  * Created by hewz on 2017/7/13.
  */
 
 class IMHelper {
 
-    private static final String tag = IMHelper.class.getSimpleName();
+    private static final String tag = "Plugin#IMHelper";
 
-    static void initIMSdk(final CallbackContext callbackContext, Context context, String identify, String usersig) {
-        TIMSdkConfig config = new TIMSdkConfig(1400026815)
+    static void initIMSdk(final int appid) {
+        TIMSdkConfig config = new TIMSdkConfig(appid)
                 .enableCrashReport(false)
                 .enableLogPrint(true)
                 .setLogLevel(TIMLogLevel.DEBUG)
                 .setLogPath(Environment.getExternalStorageDirectory().getPath() + "/imLog/");
 
-        TIMManager.getInstance().init(context, config);
+        TIMManager.getInstance().init(instance.cordova.getActivity().getApplicationContext(), config);
 
         TIMUserConfig userConfig = new TIMUserConfig()
                 //设置用户状态变更事件监听器
@@ -53,6 +58,17 @@ class IMHelper {
                     public void onForceOffline() {
                         //被其他终端踢下线
                         Log.i(tag, "onForceOffline");
+                        final String js = "window.im.onForceOffline();";
+                        instance.cordova.getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (instance == null) {
+                                    Log.i(tag, "instance is null");
+                                    return;
+                                }
+                                instance.webView.loadUrl("javascript:" + js);
+                            }
+                        });
                     }
 
                     @Override
@@ -172,6 +188,9 @@ class IMHelper {
         //将用户配置与通讯管理器进行绑定
         TIMManager.getInstance().setUserConfig(userConfig);
 
+    }
+
+    static void login(final CallbackContext callbackContext, final String identify, final String usersig) {
         // identifier为用户名，userSig 为用户登录凭证
         TIMManager.getInstance().login(identify, usersig, new TIMCallBack() {
             @Override
@@ -179,14 +198,60 @@ class IMHelper {
                 //错误码code和错误描述desc，可用于定位请求失败原因
                 //错误码code列表请参见错误码表
                 Log.d(tag, "login failed. code: " + code + " errmsg: " + desc);
+                //初始化本地存储
+                TIMManagerExt.getInstance().initStorage(identify, new TIMCallBack() {
+                    @Override
+                    public void onError(int code, String desc) {
+                        Log.e(tag, "initStorage failed, code: " + code + "|descr: " + desc);
+                        if(6208 == code)
+                            login(callbackContext, identify, usersig);
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        Log.i(tag, "initStorage succ");
+                    }
+                });
+
                 callbackContext.error("login failed. code: " + code + " errmsg: " + desc);
             }
 
             @Override
             public void onSuccess() {
-                Log.d(tag, "login succ");
-                callbackContext.success();
+                Log.d(tag, "login success");
+                callbackContext.success("login success");
             }
         });
+    }
+
+    static void logout(final CallbackContext callbackContext) {
+        TIMManager.getInstance().logout(new TIMCallBack() {
+            @Override
+            public void onError(int code, String desc) {
+
+                //错误码code和错误描述desc，可用于定位请求失败原因
+                //错误码code列表请参见错误码表
+                Log.d(tag, "logout failed. code: " + code + " errmsg: " + desc);
+            }
+
+            @Override
+            public void onSuccess() {
+                //登出成功
+            }
+        });
+    }
+
+    static void setOfflinePush(boolean on) {
+        TIMOfflinePushSettings settings = new TIMOfflinePushSettings();
+        //开启离线推送
+        settings.setEnabled(on);
+        settings.setC2cMsgRemindSound(null);
+        settings.setGroupMsgRemindSound(null);
+        TIMManager.getInstance().setOfflinePushSettings(settings);
+    }
+
+    static void getOfflinePushStatus(final CallbackContext callbackContext) {
+        TIMOfflinePushSettings settings = new TIMOfflinePushSettings();
+        callbackContext.success(String.valueOf(settings.isEnabled()));
     }
 }

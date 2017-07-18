@@ -1,5 +1,9 @@
 package hewz.plugins.im;
 
+import android.app.Activity;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -13,8 +17,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * 腾讯云通信插件
@@ -22,19 +24,25 @@ import java.util.concurrent.Executors;
  * @author hewz
  *
  */
+@SuppressWarnings("unused")
 public class IM extends CordovaPlugin {
 
-	/** JS回调接口对象 */
-	public static CallbackContext cbContext = null;
-
-	private static final String LOG_TAG = "Plugin IM";
+	private static final String LOG_TAG = "Plugin#IM";
 
 	private final static List<String> methodList =
 			Arrays.asList(
 					"login",
+					"logout",
+					"getOfflinePushStatus",
 					"setOfflinePush"
 			);
-	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
+
+	private Activity activity;
+
+	static IM instance;
+	public IM() {
+		instance = this;
+	}
 
 	/**
 	 * 插件主入口
@@ -47,7 +55,25 @@ public class IM extends CordovaPlugin {
 		if (!methodList.contains(action)) {
 			return false;
 		}
-		threadPool.execute(new Runnable() {
+		if(activity == null)
+		{
+			activity = this.cordova.getActivity();
+			ApplicationInfo info = null;
+			try {
+				info = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), PackageManager.GET_META_DATA);
+			} catch (PackageManager.NameNotFoundException e) {
+				e.printStackTrace();
+			}
+			if(info == null)
+			{
+				LOG.e(LOG_TAG, "IM#unable to get im appid");
+				return false;
+			}
+			Bundle a = info.metaData;
+			int appid = info.metaData.getInt("IM.AppID");
+			IMHelper.initIMSdk(appid);
+		}
+		cordova.getThreadPool().execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -63,13 +89,31 @@ public class IM extends CordovaPlugin {
 	}
 
 	void login(JSONArray data, CallbackContext callbackContext) {
-		//IMHelper.initIMSdk(this.cordova.getActivity().getApplicationContext(), "692", "eJxNjlFPgzAUhf8Lr5qtLRaKb9tipgk4si3L4kvT0Du8MqHSjsGM-92GkOjr952cc76DfbqbqaJoLrWTbjAQPAYkuB8xaqgdnhBaD6OETVgZg1oqJ8NW-0tbXclReUYfCCEsEpRPEnqDLUh1cmMZ5ZwzH5lsB63FpvaCEcopCwn5kxZLL7KnbPU87L5eow82kJ6J-RDfaneB8v1chI0RiyPGNqU5y48bK1Yvy22c5qKrKnq49m-bknZJqe4YzJviBjzXmyva*eK8XmfZNOTwE8bvSZKQmPoDP78lb1VD");
+		Log.d(LOG_TAG, data.toString());
 		try {
-			IMHelper.initIMSdk(callbackContext, this.cordova.getActivity().getApplicationContext(), data.getString(0), data.getString(1));
+			IMHelper.login(callbackContext, data.getString(0), data.getString(1));
 		} catch (JSONException e) {
 			e.printStackTrace();
 			callbackContext.error("error args");
 		}
+	}
+
+	void logout(JSONArray data, CallbackContext callbackContext) {
+		IMHelper.logout(callbackContext);
+	}
+
+	void setOfflinePush(JSONArray data, CallbackContext callbackContext){
+		Log.d(LOG_TAG, data.toString());
+		try {
+			IMHelper.setOfflinePush(data.getBoolean(0));
+		} catch (JSONException e) {
+			e.printStackTrace();
+			callbackContext.error("error args");
+		}
+	}
+
+	void getOfflinePushStatus(JSONArray data, CallbackContext callbackContext){
+		IMHelper.getOfflinePushStatus(callbackContext);
 	}
 
 	@Override
