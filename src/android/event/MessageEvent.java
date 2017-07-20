@@ -1,6 +1,8 @@
 package hewz.plugins.im.event;
 
 
+import android.util.Log;
+
 import com.tencent.imsdk.TIMManager;
 import com.tencent.imsdk.TIMMessage;
 import com.tencent.imsdk.TIMMessageListener;
@@ -19,9 +21,11 @@ public class MessageEvent extends Observable implements TIMMessageListener, TIMM
 
 
     private volatile static MessageEvent instance;
+    private static final String TAG = "Plugin#MessageEvent";
 
     private MessageEvent(){
         //注册消息监听器
+        Log.d(TAG, "msg event create");
         TIMManager.getInstance().addMessageListener(this);
 
     }

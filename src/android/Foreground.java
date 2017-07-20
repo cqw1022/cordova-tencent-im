@@ -13,7 +13,7 @@ public class Foreground implements Application.ActivityLifecycleCallbacks {
 	//单例
 	private static Foreground instance = new Foreground();
 
-	private static String TAG = Foreground.class.getSimpleName();
+	private static String TAG = "Plugin#Foreground";
 	private final int CHECK_DELAY = 500;
 
 	//用于判断是否程序在前台

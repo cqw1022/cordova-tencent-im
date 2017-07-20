@@ -209,9 +209,6 @@ class IMHelper {
                     @Override
                     public void onSuccess() {
                         Log.i(tag, "initStorage succ");
-                        PushUtil.getInstance();
-                        MessageEvent.getInstance();
-                        IM.addObserver();
                     }
                 });
 
@@ -222,6 +219,9 @@ class IMHelper {
             public void onSuccess() {
                 Log.d(tag, "login success");
                 callbackContext.success("login success");
+                PushUtil.getInstance();
+                MessageEvent.getInstance();
+                IM.addObserver();
             }
         });
     }

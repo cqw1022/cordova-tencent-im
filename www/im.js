@@ -14,7 +14,10 @@ var im = {
         exec(successFn, failureFn, 'IM', 'setOfflinePush', [data]);
     },
     onForceOffline: function() {
-        cordova.fireDocumentEvent('im.onForceOffline', '123');
+        cordova.fireDocumentEvent('im.onForceOffline');
+    },
+    onNewMessages: function(data) {
+        cordova.fireDocumentEvent('im.onNewMessages', data);
     }
 };
 

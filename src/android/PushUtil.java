@@ -24,7 +24,7 @@ import hewz.plugins.im.event.MessageEvent;
  */
 public class PushUtil implements Observer {
 
-    private static final String TAG = PushUtil.class.getSimpleName();
+    private static final String TAG = "Plugin#PushUtil";
 
     private static int pushNum = 0;
 
@@ -33,6 +33,7 @@ public class PushUtil implements Observer {
     private static PushUtil instance = new PushUtil();
 
     private PushUtil() {
+        Log.d(TAG, "push event create");
         MessageEvent.getInstance().addObserver(this);
     }
 
@@ -52,7 +53,7 @@ public class PushUtil implements Observer {
             return;
 
         String senderStr, contentStr;
-        senderStr = msg.getSenderProfile().getNickName();
+        senderStr = msg.getSender();
         contentStr = MessageFactory.getSummary(msg);
         Log.d(TAG, "recv msg " + contentStr);
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -62,8 +63,8 @@ public class PushUtil implements Observer {
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent intent = PendingIntent.getActivity(context, 0,
                 notificationIntent, 0);
-        mBuilder.setContentTitle(senderStr)//设置通知栏标题
-                .setContentText(contentStr)
+        mBuilder.setContentTitle(context.getString(R.string.app_name))//设置通知栏标题
+                .setContentText(senderStr + ":" + contentStr)
                 .setContentIntent(intent) //设置通知栏点击意图
 //                .setNumber(++pushNum) //设置通知集合的数量
                 .setTicker(senderStr + ":" + contentStr) //通知首次出现在通知栏，带上升动画效果的
@@ -94,6 +95,7 @@ public class PushUtil implements Observer {
      */
     @Override
     public void update(Observable observable, Object data) {
+        Log.d(TAG, "Observer update");
         if (observable instanceof MessageEvent) {
             if (data instanceof TIMMessage) {
                 TIMMessage msg = (TIMMessage) data;

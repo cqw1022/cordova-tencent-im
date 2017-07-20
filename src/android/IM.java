@@ -136,6 +136,7 @@ public class IM extends CordovaPlugin implements Observer{
 
 	@Override
 	public void update(Observable observable, Object data) {
+		Log.d(LOG_TAG, "Observer update");
 		if (observable instanceof MessageEvent && data instanceof TIMMessage) {
 			JSONObject mJson = new JSONObject();
 			TIMMessage msg = (TIMMessage) data;
