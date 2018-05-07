@@ -8,11 +8,11 @@
 
 #import "IMAPlatform.h"
 
-@interface IMAPlatform (Login)
-
-- (void)login:(TIMLoginParam *)param succ:(TIMLoginSucc)succ fail:(TIMFail)fail;
-
-// 配置进入主界面后的要拉取的数据
-- (void)configOnLoginSucc:(TIMLoginParam *)param;
-
-@end
+//@interface IMAPlatform (Login)
+//
+//- (void)login:(TIMLoginParam *)param succ:(TIMLoginSucc)succ fail:(TIMFail)fail;
+//
+//// 配置进入主界面后的要拉取的数据
+//- (void)configOnLoginSucc:(TIMLoginParam *)param;
+//
+//@end

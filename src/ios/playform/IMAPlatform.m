@@ -36,14 +36,14 @@ static IMAPlatform *_sharedInstance = nil;
 static Class kHostClass = Nil;
 + (void)configHostClass:(Class)hostcls
 {
-    if (![hostcls isSubclassOfClass:[IMAHost class]])
-    {
-        DebugLog(@"%@ 必须是IMAHost的子类型", hostcls);
-    }
-    else
-    {
-        kHostClass = hostcls;
-    }
+//    if (![hostcls isSubclassOfClass:[IMAHost class]])
+//    {
+//        DebugLog(@"%@ 必须是IMAHost的子类型", hostcls);
+//    }
+//    else
+//    {
+//        kHostClass = hostcls;
+//    }
 }
 + (instancetype)sharedInstance
 {
@@ -75,42 +75,42 @@ static Class kHostClass = Nil;
 //}
 
 
-- (IMAContactManager *)contactMgr
-{
-    if (!_contactMgr)
-    {
-        _contactMgr = [[IMAContactManager alloc] init];
-    }
-    return _contactMgr;
-}
+//- (IMAContactManager *)contactMgr
+//{
+//    if (!_contactMgr)
+//    {
+//        _contactMgr = [[IMAContactManager alloc] init];
+//    }
+//    return _contactMgr;
+//}
 
-- (IMAConversationManager *)conversationMgr
-{
-    if (!_conversationMgr)
-    {
-        _conversationMgr = [[IMAConversationManager alloc] init];
-    }
-    return _conversationMgr;
-}
-
-- (IMAUser *)getReceiverOf:(IMAConversation *)conv
-{
-    NSString *receiver = [conv receiver];
-    if (conv.type == TIM_C2C)
-    {
-        return [self.contactMgr getUserByUserId:receiver];
-    }
-    else if (conv.type == TIM_GROUP)
-    {
-        // 查询群列表
-        return [self.contactMgr getUserByGroupId:receiver];
-    }
-    else
-    {
-        DebugLog(@"不支持的会话模式");
-        return nil;
-    }
-}
+//- (IMAConversationManager *)conversationMgr
+//{
+//    if (!_conversationMgr)
+//    {
+//        _conversationMgr = [[IMAConversationManager alloc] init];
+//    }
+//    return _conversationMgr;
+//}
+//
+//- (IMAUser *)getReceiverOf:(IMAConversation *)conv
+//{
+//    NSString *receiver = [conv receiver];
+//    if (conv.type == TIM_C2C)
+//    {
+//        return [self.contactMgr getUserByUserId:receiver];
+//    }
+//    else if (conv.type == TIM_GROUP)
+//    {
+//        // 查询群列表
+//        return [self.contactMgr getUserByGroupId:receiver];
+//    }
+//    else
+//    {
+//        DebugLog(@"不支持的会话模式");
+//        return nil;
+//    }
+//}
 
 - (void)configIMSDK:(IMAPlatformConfig *)cfg
 {
@@ -152,16 +152,16 @@ static Class kHostClass = Nil;
 //    userConfig.messageUpdateListener = self;//消息svr重写监听器（加载消息扩展包有效）
 //    userConfig.uploadProgressListener = self;//文件上传进度监听器
 //    userConfig.groupEventListener todo
-    userConfig.messgeRevokeListener = self.conversationMgr;
+//    userConfig.messgeRevokeListener = self.conversationMgr;
     userConfig.friendshipListener = self;//关系链数据本地缓存监听器（加载好友扩展包、enableFriendshipProxy有效）
     userConfig.groupListener = self;//群组据本地缓存监听器（加载群组扩展包、enableGroupAssistant有效）
-    [manager setUserConfig:userConfig];
+//    [manager setUserConfig:userConfig];
 }
 
 - (void)saveToLocal
 {
     // 保存上一次联系人列表状态
-    [_contactMgr saveToLocal];
+//    [_contactMgr saveToLocal];
     
     // 保存Config状态
 }
@@ -170,10 +170,10 @@ static Class kHostClass = Nil;
 {
     [self offlineLogin];
     
-    self.offlineExitLivingBlock = nil;
+//    self.offlineExitLivingBlock = nil;
     
     [IMAPlatform setAutoLogin:NO];
-    _host = nil;
+//    _host = nil;
     
 #if kIsUseAVSDKAsLiveScene
     [TCAVSharedContext destroyContextCompletion:nil];
@@ -186,10 +186,10 @@ static Class kHostClass = Nil;
     // 被踢下线，则清空单例中的数据，再登录后再重新创建
     [self saveToLocal];
     
-    _contactMgr = nil;
+//    _contactMgr = nil;
     
-    [[TIMManager sharedInstance] removeMessageListener:_conversationMgr];
-    _conversationMgr = nil;
+//    [[TIMManager sharedInstance] removeMessageListener:_conversationMgr];
+//    _conversationMgr = nil;
 }
 
 - (void)logout:(TIMLoginSucc)succ fail:(TIMFail)fail
@@ -211,43 +211,43 @@ static Class kHostClass = Nil;
     }];
 }
 
-- (IMAPlatformConfig *)localConfig
-{
-    return _host.loginParm.config;
-}
+//- (IMAPlatformConfig *)localConfig
+//{
+//    return _host.loginParm.config;
+//}
+//
+//- (void)configHost:(TIMLoginParam *)param
+//{
+//    if (!_host)
+//    {
+//        if (kHostClass == Nil)
+//        {
+//            kHostClass = [IMAHost class];
+//        }
+//        _host = [[kHostClass alloc] init];
+//    }
+//    _host.loginParm = param;
+//    [_host asyncProfile];
+//
+//#if kIsUseAVSDKAsLiveScene
+//    [TCAVSharedContext configWithStartedContext:_host completion:nil];
+//#endif
+//}
 
-- (void)configHost:(TIMLoginParam *)param
-{
-    if (!_host)
-    {
-        if (kHostClass == Nil)
-        {
-            kHostClass = [IMAHost class];
-        }
-        _host = [[kHostClass alloc] init];
-    }
-    _host.loginParm = param;
-    [_host asyncProfile];
-    
-#if kIsUseAVSDKAsLiveScene
-    [TCAVSharedContext configWithStartedContext:_host completion:nil];
-#endif
-}
-
-- (void)changeToNetwork:(TCQALNetwork)work
-{
-    if (work > EQALNetworkType_ReachableViaWWAN)
-    {
-        // 不处理这些
-        work = EQALNetworkType_ReachableViaWWAN;
-    }
-    DebugLog(@"网络切换到(-1:未知 0:无网 1:wifi 2:移动网):%d", work);
-    //    if (work != _networkType)
-    //    {
-    self.networkType = work;
-    
-    //    }
-}
+//- (void)changeToNetwork:(TCQALNetwork)work
+//{
+//    if (work > EQALNetworkType_ReachableViaWWAN)
+//    {
+//        // 不处理这些
+//        work = EQALNetworkType_ReachableViaWWAN;
+//    }
+//    DebugLog(@"网络切换到(-1:未知 0:无网 1:wifi 2:移动网):%d", work);
+//    //    if (work != _networkType)
+//    //    {
+//    self.networkType = work;
+//    
+//    //    }
+//}
 
 
 @end

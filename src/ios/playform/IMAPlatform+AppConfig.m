@@ -26,11 +26,11 @@
     [[IMAPlatform sharedInstance] saveToLocal];
     
     
-    NSUInteger unReadCount = [[IMAPlatform sharedInstance].conversationMgr unReadMessageCount];
-    [UIApplication sharedApplication].applicationIconBadgeNumber = unReadCount;
+//    NSUInteger unReadCount = [[IMAPlatform sharedInstance].conversationMgr unReadMessageCount];
+//    [UIApplication sharedApplication].applicationIconBadgeNumber = unReadCount;
     
     TIMBackgroundParam  *param = [[TIMBackgroundParam alloc] init];
-    [param setC2cUnread:(int)unReadCount];
+//    [param setC2cUnread:(int)unReadCount];
     
     
     [[TIMManager sharedInstance] doBackground:param succ:^() {

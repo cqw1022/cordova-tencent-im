@@ -17,9 +17,9 @@ typedef NS_ENUM(NSInteger, IMARefreshStyle) {
 };
 
 
-#import "IMAContactManager.h"
-#import "IMAContactManager+SubGroup.h"
-#import "IMAContactManager+Group.h"
+//#import "IMAContactManager.h"
+//#import "IMAContactManager+SubGroup.h"
+//#import "IMAContactManager+Group.h"
 
 #import "IMAConversationManager.h"
 
@@ -39,6 +39,6 @@ typedef NS_ENUM(NSInteger, IMARefreshStyle) {
 
 #import "IMAPlatform+Friend.h"
 
-#import "IMAContactManager+User.h"
+//#import "IMAContactManager+User.h"
 
 #endif /* IMPlatformHeader_h */

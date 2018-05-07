@@ -6,9 +6,9 @@
 //
 //
 
-#import "CDVWxpay.h"
+#import "CDVTxim.h"
 
-@implementation CDVWxpay
+@implementation CDVTxim
 
 #pragma mark "API"
 
@@ -53,14 +53,14 @@
         BOOL isAutoLogin = [IMAPlatform isAutoLogin];
         if (isAutoLogin)
         {
-            _loginParam = [IMALoginParam loadFromLocal];
+            self._loginParam = [IMALoginParam loadFromLocal];
         }
         else
         {
-            _loginParam = [[IMALoginParam alloc] init];
+            self._loginParam = [[IMALoginParam alloc] init];
         }
         
-        [IMAPlatform configWith:_loginParam.config];
+        [IMAPlatform configWith:self._loginParam.config];
 
         CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
         
@@ -81,7 +81,13 @@
 {
     self.currentCallbackId = command.callbackId;
 
-
+    
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
     NSString *identifier = nil;
     NSString *userSig = nil;
     NSString *appidAt3rd = nil;
@@ -109,23 +115,23 @@
     userSig = [params objectForKey:@"appidAt3rd"];
 
 
-    _loginParam.identifier = identifier;
-    _loginParam.userSig = userSig;
-    _loginParam.tokenTime = [[NSDate date] timeIntervalSince1970];
-    _loginParam.appidAt3rd = appidAt3rd;
+    self._loginParam.identifier = identifier;
+    self._loginParam.userSig = userSig;
+    self._loginParam.tokenTime = [[NSDate date] timeIntervalSince1970];
+    self._loginParam.appidAt3rd = appidAt3rd;
     
 
-    [[IMAPlatform sharedInstance] login:_loginParam succ:^{
-        
-        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
-        // [IMAPlatform setAutoLogin:YES];
-        //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
-//        [ws configGroup];
-        
-        [self successWithCallbackID:self.currentCallbackId];
-    } fail:^(int code, NSString *msg) {
-        [self failWithCallbackIDa:self.currentCallbackId];
-    }];
+//    [[IMAPlatform sharedInstance] login:self._loginParam succ:^{
+//        
+////        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
+//        // [IMAPlatform setAutoLogin:YES];
+//        //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
+////        [ws configGroup];
+//        
+//        [self successWithCallbackID:self.currentCallbackId];
+//    } fail:^(int code, NSString *msg) {
+//        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
+//    }];
 }
 
 - (void)logout:(CDVInvokedUrlCommand *)command
@@ -134,7 +140,7 @@
     [[TIMManager sharedInstance] logout:^(){
         [self successWithCallbackID:self.currentCallbackId];
     } fail:^(int code, NSString *msg) {
-        [self failWithCallbackIDa:self.currentCallbackId];
+        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
     }];
 }
 

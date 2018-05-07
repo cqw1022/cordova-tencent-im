@@ -6,6 +6,7 @@
 //  Copyright © 2016年 AlexiChen. All rights reserved.
 //
 
+#import "TIMAdapter.h"
 #import "IMAPlatformConfig.h"
 
 @implementation IMAPlatformConfig
@@ -110,11 +111,11 @@
 
 - (void)saveToLocal
 {
-    IMAHost *host = [IMAPlatform sharedInstance].host;
-    if (host)
-    {
-        [host.loginParm saveToLocal];
-    }
+//    IMAHost *host = [IMAPlatform sharedInstance].host;
+//    if (host)
+//    {
+//        [host.loginParm saveToLocal];
+//    }
 }
 
 @end

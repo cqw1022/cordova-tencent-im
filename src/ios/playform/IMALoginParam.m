@@ -41,16 +41,16 @@
 + (instancetype)loadFromLocal
 {
     NSString *userloginKey = [[NSUserDefaults standardUserDefaults] objectForKey:kIMALoginParamUserKey];
-    if (userloginKey)
-    {
-        // 说明本地有存储
-        IMALoginParam *param = [IMALoginParam loadInfo:[IMALoginParam class] withKey:userloginKey];
-        return param;
-    }
-    else
-    {
+//    if (userloginKey)
+//    {
+//        // 说明本地有存储
+//        IMALoginParam *param = [IMALoginParam loadInfo:[IMALoginParam class] withKey:userloginKey];
+//        return param;
+//    }
+//    else
+//    {
         return [[IMALoginParam alloc] init];
-    }
+//    }
 }
 
 - (void)saveToLocal
@@ -62,9 +62,9 @@
     
     if ([self isVailed])
     {
-        NSString *useridKey = [NSString stringWithFormat:@"%@_LoginParam", self.identifier];
-        [[NSUserDefaults standardUserDefaults] setObject:useridKey forKey:kIMALoginParamUserKey];
-        [IMALoginParam saveInfo:self withKey:useridKey];
+//        NSString *useridKey = [NSString stringWithFormat:@"%@_LoginParam", self.identifier];
+//        [[NSUserDefaults standardUserDefaults] setObject:useridKey forKey:kIMALoginParamUserKey];
+//        [IMALoginParam saveInfo:self withKey:useridKey];
     }
 }
 
@@ -77,7 +77,8 @@
 
 - (BOOL)isVailed
 {
-    return ![NSString isEmpty:self.identifier] && ![NSString isEmpty:self.userSig];//&& ![self isExpired]
+    return true;
+//    return ![NSString isEmpty:self.identifier] && ![NSString isEmpty:self.userSig];//&& ![self isExpired]
 }
 
 @end

@@ -7,8 +7,9 @@
 //
 
 #import <Cordova/CDV.h>
-#import "WXApi.h"
-#import "WXApiObject.h"
+#import "TIMAdapter.h"
+//#import "WXApi.h"
+//#import "WXApiObject.h"
 
 @interface CDVTxim:CDVPlugin <TIMConnListener>
 

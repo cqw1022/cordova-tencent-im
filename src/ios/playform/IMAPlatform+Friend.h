@@ -1,16 +1,16 @@
+////
+////  IMAPlatform+Friend.h
+////  TIMChat
+////
+////  Created by AlexiChen on 16/3/7.
+////  Copyright © 2016年 AlexiChen. All rights reserved.
+////
 //
-//  IMAPlatform+Friend.h
-//  TIMChat
+//#import "IMAPlatform.h"
 //
-//  Created by AlexiChen on 16/3/7.
-//  Copyright © 2016年 AlexiChen. All rights reserved.
+//@interface IMAPlatform (Friend)
 //
-
-#import "IMAPlatform.h"
-
-@interface IMAPlatform (Friend)
-
-// 删除好友
-- (void)asyncDeleteFriend:(IMAUser *)user succ:(TIMFriendSucc)succ fail:(TIMFail)fail;
-
-@end
+//// 删除好友
+//- (void)asyncDeleteFriend:(IMAUser *)user succ:(TIMFriendSucc)succ fail:(TIMFail)fail;
+//
+//@end

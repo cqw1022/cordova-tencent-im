@@ -10,23 +10,23 @@
 
 // 与App配置相关的操作
 
-@interface IMAPlatform (AppConfig)
-
-// app 启动时配置
-- (void)configOnAppLaunch;
-
-// app 进入后台时配置
-- (void)configOnAppEnterBackground;
-
-// app 进前台时配置
-- (void)configOnAppEnterForeground;
-
-// app become active
-- (void)configOnAppDidBecomeActive;
-
-// app 注册APNS成功后
-- (void)configOnAppRegistAPNSWithDeviceToken:(NSData *)data;
-
-
-
-@end
+//@interface IMAPlatform (AppConfig)
+//
+//// app 启动时配置
+//- (void)configOnAppLaunch;
+//
+//// app 进入后台时配置
+//- (void)configOnAppEnterBackground;
+//
+//// app 进前台时配置
+//- (void)configOnAppEnterForeground;
+//
+//// app become active
+//- (void)configOnAppDidBecomeActive;
+//
+//// app 注册APNS成功后
+//- (void)configOnAppRegistAPNSWithDeviceToken:(NSData *)data;
+//
+//
+//
+//@end

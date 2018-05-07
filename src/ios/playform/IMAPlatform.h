@@ -7,31 +7,32 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TIMAdapter.h"
 
 // Demo的业务逻辑入口，外部所的要使用IMSDK的地方，都间接能过IMAPlatform调用
 typedef EQALNetworkType TCQALNetwork;
 @interface IMAPlatform : NSObject
 {
 @protected
-    IMAHost                     *_host;             // 当前用户
-    IMAContactManager           *_contactMgr;       // 联系人
-    IMAConversationManager      *_conversationMgr;  // 会话列表
+//    IMAHost                     *_host;             // 当前用户
+//    IMAContactManager           *_contactMgr;       // 联系人
+//    IMAConversationManager      *_conversationMgr;  // 会话列表
 
 }
 
 
-@property (nonatomic, readonly) IMAHost                 *host;
+//@property (nonatomic, readonly) IMAHost                 *host;
 
-@property (nonatomic, readonly) IMAConversationManager  *conversationMgr;
+//@property (nonatomic, readonly) IMAConversationManager  *conversationMgr;
 
-@property (nonatomic, readonly) IMAContactManager       *contactMgr;
+//@property (nonatomic, readonly) IMAContactManager       *contactMgr;
 
 @property (nonatomic, assign) BOOL isConnected;     // 当前是否连接上，外部可用此方法判断是否有网
 // 当前使用的网络类型，默认wifi，只取EQALNetworkType 中对应的 -1:未知 0:无网 1:wifi 2:移动网，用户若需要，可重写对应的方法以满足自身App需求
 @property (nonatomic, readonly) TCQALNetwork networkType;
 
 // 被踢下线时，如果当前在直播的时候，进行调用
-@property (nonatomic, copy) CommonVoidBlock offlineExitLivingBlock;
+//@property (nonatomic, copy) CommonVoidBlock offlineExitLivingBlock;
 
 + (instancetype)configWith:(IMAPlatformConfig *)cfg;
 
@@ -54,7 +55,7 @@ typedef EQALNetworkType TCQALNetwork;
 // 退出
 - (void)logout:(TIMLoginSucc)succ fail:(TIMFail)fail;
 
-- (IMAUser *)getReceiverOf:(IMAConversation *)conv;
+//- (IMAUser *)getReceiverOf:(IMAConversation *)conv;
 
 // 被踢下线后，再重新登录
 - (void)offlineLogin;

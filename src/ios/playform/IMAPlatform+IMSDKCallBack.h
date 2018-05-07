@@ -11,18 +11,18 @@
 
 
 // IMSDK回调（除MessageListener外）统一处理
-
-@interface IMAPlatform (IMSDKCallBack)<TIMUserStatusListener, TIMConnListener, TIMRefreshListener, TLSRefreshTicketListener>
-
-
-@end
-
-@interface IMAPlatform (FriendShipListener)<TIMFriendshipListener>
-
-@end
-
-@interface IMAPlatform (GroupAssistantListener)<TIMGroupListener>
-
-@end
+//
+//@interface IMAPlatform (IMSDKCallBack)<TIMUserStatusListener, TIMConnListener, TIMRefreshListener, TLSRefreshTicketListener>
+//
+//
+//@end
+//
+//@interface IMAPlatform (FriendShipListener)<TIMFriendshipListener>
+//
+//@end
+//
+//@interface IMAPlatform (GroupAssistantListener)<TIMGroupListener>
+//
+//@end
 
 

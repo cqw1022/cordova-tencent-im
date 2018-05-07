@@ -39,8 +39,8 @@ typedef NS_OPTIONS(NSUInteger, IMAContactChangedNotifyType) {
 @interface IMAContactChangedNotifyItem : NSObject
 
 @property (nonatomic, assign) IMAContactChangedNotifyType type;     // 类型
-@property (nonatomic, strong) IMASubGroup *subGroup;                // 被操作的分组
-@property (nonatomic, strong) IMAUser     *user;                    // 被操作的用户
+//@property (nonatomic, strong) IMASubGroup *subGroup;                // 被操作的分组
+//@property (nonatomic, strong) IMAUser     *user;                    // 被操作的用户
 @property (nonatomic, assign) NSUInteger  index;                    // 被操对象的index
 
 @property (nonatomic, strong) IMAContactChangedNotifyItem *toItem;  // 只在移动分组时使用
@@ -55,7 +55,7 @@ typedef NS_OPTIONS(NSUInteger, IMAContactChangedNotifyType) {
 
 typedef void (^IMAContactChangedCompletion)(IMAContactChangedNotifyItem *item);
 
-typedef void (^IMASubGroupCompletion)(IMASubGroup *sg);
+//typedef void (^IMASubGroupCompletion)(IMASubGroup *sg);
 /**
  *  联系人管理类。包括好友，群的管理，这里的类与界面无关，只是对数据的操作，界面上对联系人的操作，调用这个类的接口即可。
  */
@@ -63,7 +63,7 @@ typedef void (^IMASubGroupCompletion)(IMASubGroup *sg);
 {
 @protected
     // 好友分组IMASubGroup列表
-    CLSafeMutableArray      *_subGroupList;
+//    CLSafeMutableArray      *_subGroupList;
     
     
 @protected
