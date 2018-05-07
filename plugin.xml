@@ -147,4 +147,28 @@
     <source-file src="libs/android/x86_64/libwtcrypto.so" target-dir="libs/x86_64" />
   </platform>
 
+  <!-- ios -->
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+        <feature name="Wechat">
+            <param name="ios-package" value="CDVTim"/>
+            <param name="onload" value="true" />
+        </feature>
+    </config-file>
+    <header-file src="libs/ios/WXApi/Headers/WXApi.h" />
+    <header-file src="libs/ios/WXApi/Headers/WXApiObject.h" />
+
+    <framework src="libs/ios/ImSDK.framework" />
+    <framework src="libs/ios/QALSDK.framework" />
+    <framework src="libs/ios/TLSSDK.framework" />
+    <framework src="libs/ios/IMMessageExt.framework" />
+    <framework src="libs/ios/IMSDKBugly.framework" />
+    <!-- Other required frameworks -->
+    <framework src="libz.tbd" />
+    <framework src="libc++.tbd" />
+    <framework src="libsqlite3.0.tbd" />
+    <framework src="libstdc++.6.tbd" />
+    <framework src="CoreTelephony.framework" />
+    <framework src="SystemConfiguration.framework" />
+  </platform>
 </plugin>
