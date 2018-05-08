@@ -12,46 +12,49 @@
 
 #pragma mark "API"
 
+- (void)pluginInitialize {
+//    [self initSdk:NULL];
+}
+
+
 - (void)initSdk:(CDVInvokedUrlCommand *)command
 {
     [self.commandDelegate runInBackground:^{
         // check arguments
-//        NSDictionary *params = [command.arguments objectAtIndex:0];
-//        if (!params)
-//        {
-//            [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
-//            return ;
-//        }
-//
-//        NSString *sdkAppId = nil;
-//        NSString *accountType = nil;
-//
-//        // check the params
-//        if (![params objectForKey:@"sdkAppId"])
-//        {
-//            [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
-//            return ;
-//        }
-//        sdkAppId = [params objectForKey:@"sdkAppId"];
-//
-//        if (![params objectForKey:@"accountType"])
-//        {
-//            [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
-//            return ;
-//        }
-//        accountType = [params objectForKey:@"accountType"];
+        NSDictionary *params = [command.arguments objectAtIndex:0];
+        if (!params)
+        {
+            [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+            return ;
+        }
 
+        NSString *sdkAppId = nil;
+        NSString *accountType = nil;
 
+        // check the params
+        if (![params objectForKey:@"sdkAppId"])
+        {
+            [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
+            return ;
+        }
+        sdkAppId = [params objectForKey:@"sdkAppId"];
+
+        if (![params objectForKey:@"accountType"])
+        {
+            [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
+            return ;
+        }
+        accountType = [params objectForKey:@"accountType"];
 
 
         TIMManager *manager = [TIMManager sharedInstance];
         TIMSdkConfig *config = [[TIMSdkConfig alloc] init];
-//        config.sdkAppId = sdkAppId ;
-//        config.accountType = accountType;
-        config.sdkAppId = 1400082284;
-        config.accountType = @"26309";
+        config.sdkAppId = [sdkAppId intValue];
+        config.accountType = accountType;
+//        config.sdkAppId = 1400082284;
+//        config.accountType = @"26309";
         config.disableCrashReport = NO;
-        
+    
         [manager initSdk:config];
 
         BOOL isAutoLogin = [IMAPlatform isAutoLogin];
@@ -65,10 +68,12 @@
         }
 
         [IMAPlatform configWith:self._loginParam.config];
-//
-//        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
-//
-//        [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+    
+//    [self login:NULL];
+
+        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
+
+        [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
     }];
 }
 
@@ -116,15 +121,21 @@
         [self failWithCallbackID:command.callbackId withMessage:@"appidAt3rd 参数错误"];
         return ;
     }
-    userSig = [params objectForKey:@"appidAt3rd"];
-
+    appidAt3rd = [params objectForKey:@"appidAt3rd"];
 
     self._loginParam.identifier = identifier;
     self._loginParam.userSig = userSig;
-    self._loginParam.tokenTime = [[NSDate date] timeIntervalSince1970];
     self._loginParam.appidAt3rd = appidAt3rd;
+//    self._loginParam.identifier = @"admin";
+//    self._loginParam.userSig = @"eJxtzE1vgjAAxvHv0qvLUsv7kh0EWVLUBRVI4NJUWrvO0TVYZM7su48p3nZ9fnn*F5Att49Ua8kINcRqGXgCUxtC6CPk2*Dh5nX92SlDzFnzwZFrwWAkybgyci95OwBljVQjHNmBXLv-BY1s-kJTBzmea3mBO*78S8uWE7o31x5yAjQ870Uphm0V5xFezz9WOClVOPkuDhgXvdBdWdpxtO0XL0WSbbo0yZOUSn8277HIl-LkxBWdoSYs86gSxzb11lXdB*fT60Ts3tUuXGyqt8yGz*DnF9CuUwk_";
+//    self._loginParam.tokenTime = [[NSDate date] timeIntervalSince1970];
+//    self._loginParam.appidAt3rd = @"1400082284";
     
-
+//    [[TIMManager sharedInstance] logout:^(){
+//        [self successWithCallbackID:self.currentCallbackId];
+//    } fail:^(int code, NSString *msg) {
+//        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
+//    }];
    [[IMAPlatform sharedInstance] login:self._loginParam succ:^{
        
 //        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
@@ -134,7 +145,7 @@
        
        [self successWithCallbackID:self.currentCallbackId];
    } fail:^(int code, NSString *msg) {
-       [self failWithCallbackID:self.currentCallbackId withMessage:msg];
+       [self failWithCallbackID:self.currentCallbackId withCode:code];
    }];
 }
 
@@ -144,7 +155,7 @@
     [[TIMManager sharedInstance] logout:^(){
         [self successWithCallbackID:self.currentCallbackId];
     } fail:^(int code, NSString *msg) {
-        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
+        [self failWithCallbackID:self.currentCallbackId withCode:code];
     }];
 }
 
@@ -245,6 +256,12 @@
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
     [self.commandDelegate sendPluginResult:commandResult callbackId:callbackID];
 }
+
+- (void)failWithCallbackID:(NSString *)callbackID withCode:(int) code
+{
+    [self failWithCallbackID:callbackID withMessage:[NSString stringWithFormat:@"%d",code]];
+}
+
 
 - (void)failWithCallbackID:(NSString *)callbackID withError:(NSError *)error
 {

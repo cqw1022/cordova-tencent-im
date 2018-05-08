@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
-  id="hewz-plugins-im"
+  id="cordova-plugins-im"
   version="1.0.0">
-  <name>IM</name>
+  <name>Txim</name>
 
-  <js-module src="www/im.js" name="im">
-    <clobbers target="im" />
+  <js-module src="www/txim.js" name="Txim">
+    <clobbers target="Txim" />
   </js-module>
 
   <preference name="APPID" />
@@ -157,11 +157,12 @@
     </config-file>
 <!--     <header-file src="libs/ios/WXApi/Headers/WXApi.h" />
     <header-file src="libs/ios/WXApi/Headers/WXApiObject.h" /> -->
-
     <framework src="libs/ios/ImSDK.framework" />
     <framework src="libs/ios/QALSDK.framework" />
     <framework src="libs/ios/TLSSDK.framework" />
     <framework src="libs/ios/IMMessageExt.framework" />
+    <framework src="libs/ios/IMGroupExt.framework" />
+    <framework src="libs/ios/IMFriendshipExt.framework" />
     <framework src="libs/ios/IMSDKBugly.framework" />
     <!-- Other required frameworks -->
     <framework src="libz.tbd" />
