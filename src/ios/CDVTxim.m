@@ -16,39 +16,43 @@
 {
     [self.commandDelegate runInBackground:^{
         // check arguments
-        NSDictionary *params = [command.arguments objectAtIndex:0];
-        if (!params)
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
-            return ;
-        }
-        
-        NSString *sdkAppId = nil;
-        NSString *accountType = nil;
-
-        // check the params
-        if (![params objectForKey:@"sdkAppId"])
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
-            return ;
-        }
-        sdkAppId = [params objectForKey:@"sdkAppId"];
-
-        if (![params objectForKey:@"accountType"])
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
-            return ;
-        }
-        accountType = [params objectForKey:@"accountType"];
+//        NSDictionary *params = [command.arguments objectAtIndex:0];
+//        if (!params)
+//        {
+//            [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+//            return ;
+//        }
+//
+//        NSString *sdkAppId = nil;
+//        NSString *accountType = nil;
+//
+//        // check the params
+//        if (![params objectForKey:@"sdkAppId"])
+//        {
+//            [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
+//            return ;
+//        }
+//        sdkAppId = [params objectForKey:@"sdkAppId"];
+//
+//        if (![params objectForKey:@"accountType"])
+//        {
+//            [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
+//            return ;
+//        }
+//        accountType = [params objectForKey:@"accountType"];
 
 
 
 
         TIMManager *manager = [TIMManager sharedInstance];
         TIMSdkConfig *config = [[TIMSdkConfig alloc] init];
-        config.sdkAppId = sdkAppId ;
-        config.accountType = accountType;
+//        config.sdkAppId = sdkAppId ;
+//        config.accountType = accountType;
+        config.sdkAppId = 1400082284;
+        config.accountType = @"26309";
         config.disableCrashReport = NO;
+        
+        [manager initSdk:config];
 
         BOOL isAutoLogin = [IMAPlatform isAutoLogin];
         if (isAutoLogin)
@@ -59,12 +63,12 @@
         {
             self._loginParam = [[IMALoginParam alloc] init];
         }
-        
-        [IMAPlatform configWith:self._loginParam.config];
 
-        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
-        
-        [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+        [IMAPlatform configWith:self._loginParam.config];
+//
+//        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
+//
+//        [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
     }];
 }
 
@@ -121,17 +125,17 @@
     self._loginParam.appidAt3rd = appidAt3rd;
     
 
-//    [[IMAPlatform sharedInstance] login:self._loginParam succ:^{
-//        
-////        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
-//        // [IMAPlatform setAutoLogin:YES];
-//        //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
-////        [ws configGroup];
-//        
-//        [self successWithCallbackID:self.currentCallbackId];
-//    } fail:^(int code, NSString *msg) {
-//        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
-//    }];
+   [[IMAPlatform sharedInstance] login:self._loginParam succ:^{
+       
+//        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
+       // [IMAPlatform setAutoLogin:YES];
+       //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
+//        [ws configGroup];
+       
+       [self successWithCallbackID:self.currentCallbackId];
+   } fail:^(int code, NSString *msg) {
+       [self failWithCallbackID:self.currentCallbackId withMessage:msg];
+   }];
 }
 
 - (void)logout:(CDVInvokedUrlCommand *)command

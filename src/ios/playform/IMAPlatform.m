@@ -114,7 +114,7 @@ static Class kHostClass = Nil;
 
 - (void)configIMSDK:(IMAPlatformConfig *)cfg
 {
-    // TIMManager *manager = [TIMManager sharedInstance];
+     TIMManager *manager = [TIMManager sharedInstance];
     
     // [manager setEnv:cfg.environment];
     
@@ -152,10 +152,10 @@ static Class kHostClass = Nil;
 //    userConfig.messageUpdateListener = self;//消息svr重写监听器（加载消息扩展包有效）
 //    userConfig.uploadProgressListener = self;//文件上传进度监听器
 //    userConfig.groupEventListener todo
-//    userConfig.messgeRevokeListener = self.conversationMgr;
+    userConfig.messgeRevokeListener = self;
     userConfig.friendshipListener = self;//关系链数据本地缓存监听器（加载好友扩展包、enableFriendshipProxy有效）
     userConfig.groupListener = self;//群组据本地缓存监听器（加载群组扩展包、enableGroupAssistant有效）
-//    [manager setUserConfig:userConfig];
+    [manager setUserConfig:userConfig];
 }
 
 - (void)saveToLocal
@@ -249,6 +249,178 @@ static Class kHostClass = Nil;
 //    //    }
 //}
 
+
+//消息撤回通知
+- (void)onRevokeMessage:(TIMMessageLocator*)locator
+{
+   // [[NSNotificationCenter defaultCenter] postNotificationName:kIMAMSG_RevokeNotification object:locator];
+   // [self changeLastMsg:locator];
+}
+
+/**
+*  新消息通知
+*
+*  @param msgs 新消息列表，TIMMessage 类型数组
+*/
+- (void)onNewMessage:(NSArray *)msgs
+{
+    for (TIMMessage *msg in msgs)
+    {
+        
+    }
+//    for (TIMMessage *msg in msgs)
+//    {
+//        IMAMsg *imamsg = [IMAMsg msgWith:msg];
+//
+//        TIMConversation *conv = [msg getConversation];
+//
+//        BOOL isSystemMsg = [conv getType] == TIM_SYSTEM;
+//
+//        BOOL isAddGroupReq = NO;
+//        BOOL isAddFriendReq = NO;
+//        BOOL isContinue = YES;
+//        if (isSystemMsg)
+//        {
+//            int elemCount = [msg elemCount];
+//            for (int i = 0; i < elemCount; i++)
+//            {
+//                TIMElem* elem = [msg getElem:i];
+//                if ([elem isKindOfClass:[TIMGroupSystemElem class]])
+//                {
+//                    TIMGroupSystemElem *gse = (TIMGroupSystemElem *)elem;
+//                    if (gse.type == TIM_GROUP_SYSTEM_ADD_GROUP_REQUEST_TYPE)
+//                    {
+//                        isContinue = NO;
+//                        isAddGroupReq = YES;
+//                    }
+//                }
+//                else if ([elem isKindOfClass:[TIMSNSSystemElem class]])
+//                {
+//                    TIM_SNS_SYSTEM_TYPE type = ((TIMSNSSystemElem *)elem).type;
+//                    if (type == TIM_SNS_SYSTEM_ADD_FRIEND_REQ)
+//                    {
+//                        if (!msg.isSelf)
+//                        {
+//                            isContinue = NO;
+//                            isAddFriendReq = YES;
+//                        }
+//                    }
+//                }
+//            }
+//            if (isContinue)
+//            {
+//                continue;
+//            }
+//        }
+//
+//        BOOL updateSucc = NO;
+//
+//        for (int i = 0; i < [_conversationList count]; i++)
+//        {
+//            IMAConversation *imaconv = [_conversationList objectAtIndex:i];
+//            NSString *imaconvReceiver = [imaconv receiver];
+//            if (imaconv.type == [conv getType] && ([imaconvReceiver isEqualToString:[conv getReceiver]] || [imaconvReceiver isEqualToString:[IMACustomConversation getCustomConversationID:imamsg]]))
+//            {
+//                if (imaconv == _chattingConversation)
+//                {
+//                    //如果是c2c会话，则更新“对方正在输入...”状态
+//                    BOOL isInputStatus = NO;
+//
+//                    if (!msg.isSelf)
+//                    {
+//                        if ([_chattingConversation imaType] == TIM_C2C)
+//                        {
+//                            int elemCount = [imamsg.msg elemCount];
+//                            for (int i = 0; i < elemCount; i++)
+//                            {
+//                                TIMElem* elem = [msg getElem:i];
+//                                CustomElemCmd *elemCmd = [self isOnlineMsg:elem];
+//
+//                                if (elemCmd)
+//                                {
+//                                    isInputStatus = YES;
+//                                    [[NSNotificationCenter defaultCenter] postNotificationName:kUserInputStatus object:elemCmd];
+//                                }
+//                            }
+//                        }
+//
+//                        if (!isInputStatus)
+//                        {
+////                            [conv setReadMessage];
+//                            imaconv.lastMessage = imamsg;
+//                            [_chattingConversation onReceiveNewMessage:imamsg];
+//                        }
+//                    }
+//                }
+//                else
+//                {
+//                    TIMElem* elem = [msg getElem:0];
+//                    CustomElemCmd *elemCmd = [self isOnlineMsg:elem];
+//
+//                    if (!elemCmd)
+//                    {
+//                        imaconv.lastMessage = imamsg;
+//                        if (isSystemMsg)
+//                        {
+//                            __weak IMAConversationManager *ws = self;
+//                            // 系统消息
+//                            IMACustomConversation *customConv = (IMACustomConversation *)imaconv;
+//                            [customConv saveMessage:imamsg succ:^(int newUnRead) {
+//                                ws.unReadMessageCount += newUnRead;
+//                                [ws updateOnChat:imaconv moveFromIndex:i];
+//                            }];
+//                        }
+//                        else
+//                        {
+//                            //如果是自己发出去的消息，一定是已读(这里判断主要是用在多终端登录的情况下)
+//                            if (![imamsg isMineMsg])
+//                            {
+//                                self.unReadMessageCount++;
+//                            }
+//                            [self updateOnChat:imaconv moveFromIndex:i];
+//                        }
+//                    }
+//                }
+//                updateSucc = YES;
+//                break;
+//            }
+//        }
+//
+//        if (!updateSucc && _refreshStyle == EIMARefresh_None)
+//        {
+//            if (isSystemMsg)
+//            {
+//                NSString *receiverid = [IMACustomConversation getCustomConversationID:imamsg];
+//                TIMConversation *imconv = [[TIMManager sharedInstance] getConversation:TIM_SYSTEM receiver:receiverid];
+//                [imconv setReadMessage:nil succ:^{
+//
+//                } fail:^(int code, NSString *msg) {
+//
+//                }];
+//                // 说明会话列表中没有该会话，新生建会话，并更新到
+//                IMACustomConversation *temp = [[IMACustomConversation alloc] initWith:imconv andMsg:imamsg];
+//                if (temp)
+//                {
+//                    __weak IMAConversationManager *ws = self;
+//                    [temp saveMessage:imamsg succ:^(int newUnRead) {
+//                        ws.unReadMessageCount += newUnRead;
+//                    }];
+//                    [_conversationList insertObject:temp atIndex:[self insertPosition]];
+//                    [self updateOnNewConversation:temp];
+//                }
+//            }
+//            else
+//            {
+//                // 说明会话列表中没有该会话，新生建会话，并更新到
+//                IMAConversation *temp = [[IMAConversation alloc] initWith:conv];
+//                temp.lastMessage = imamsg;
+//                [_conversationList insertObject:temp atIndex:[self insertPosition]];
+//                self.unReadMessageCount++;
+//                [self updateOnNewConversation:temp];
+//            }
+//        }
+//    }
+}
 
 @end
 

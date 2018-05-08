@@ -15,43 +15,43 @@
 #define kEachKickErrorCode 6208
 - (void)login:(TIMLoginParam *)param succ:(TIMLoginSucc)succ fail:(TIMFail)fail
 {
-//    if (!param)
-//    {
-//        if (fail)
-//        {
-//            fail(-1,@"参数错误");
-//        }
-//        return;
-//    }
-//    
-//    __weak IMAPlatform *ws = self;
-//    [[TIMManager sharedInstance] login:param succ:^{
-//        
+    if (!param)
+    {
+        if (fail)
+        {
+            fail(-1,@"参数错误");
+        }
+        return;
+    }
+    
+    __weak IMAPlatform *ws = self;
+    [[TIMManager sharedInstance] login:param succ:^{
+        
 //        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
-//        [IMAPlatform setAutoLogin:YES];
-//        //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
-////        [ws configGroup];
-//        
-//        if (succ)
-//        {
-//            succ();
-//        }
-//    } fail:^(int code, NSString *msg) {
-//        
-//        DebugLog(@"TIMLogin Failed: code=%d err=%@", code, msg);
-//        if (code == kEachKickErrorCode)
-//        {
-//            //互踢重联，重新再登录一次
-//            [ws offlineKicked:param succ:succ fail:fail];
-//        }
-//        else
-//        {
-//            if (fail)
-//            {
-//                fail(code, msg);
-//            }
-//        }
-//    }];
+        [IMAPlatform setAutoLogin:YES];
+        //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
+//        [ws configGroup];
+        
+        if (succ)
+        {
+            succ();
+        }
+    } fail:^(int code, NSString *msg) {
+        
+        DebugLog(@"TIMLogin Failed: code=%d err=%@", code, msg);
+        if (code == kEachKickErrorCode)
+        {
+            //互踢重联，重新再登录一次
+            [ws offlineKicked:param succ:succ fail:fail];
+        }
+        else
+        {
+            if (fail)
+            {
+                fail(code, msg);
+            }
+        }
+    }];
 }
 
 - (void)registNotification

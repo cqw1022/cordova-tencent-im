@@ -8,6 +8,7 @@
 
 #import <Cordova/CDV.h>
 #import "TIMAdapter.h"
+#import "IMAPlatformHeaders.h"
 //#import "WXApi.h"
 //#import "WXApiObject.h"
 

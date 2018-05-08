@@ -7,6 +7,7 @@
 //
 
 #import "IMALoginParam.h"
+#import "TIMAdapter.h"
 
 @implementation TIMLoginParam (PlatformConfig)
 
