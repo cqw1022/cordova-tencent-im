@@ -9,7 +9,7 @@
     <clobbers target="Txim" />
   </js-module>
 
-  <preference name="APPID" />
+  <!-- <preference name="APPID" /> -->
 
   <!-- android -->
   <platform name="android">
@@ -38,7 +38,7 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <meta-data android:name="IM.AppID" android:value="$APPID" />
+      <!-- <meta-data android:name="IM.AppID" android:value="$APPID" /> -->
       <!-- 【必须】消息收发service -->
       <service
           android:name="com.tencent.qalsdk.service.QalService"
