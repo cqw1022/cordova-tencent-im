@@ -155,8 +155,32 @@
             <param name="onload" value="true" />
         </feature>
     </config-file>
-<!--     <header-file src="libs/ios/WXApi/Headers/WXApi.h" />
-    <header-file src="libs/ios/WXApi/Headers/WXApiObject.h" /> -->
+
+
+    <header-file src="src/ios/playform/IMAConversationManager.h" />
+    <source-file src="src/ios/playform/IMAConversationManager.m" />
+    <header-file src="src/ios/playform/IMALoginParam.h" />
+    <source-file src="src/ios/playform/IMALoginParam.m" />
+    <header-file src="src/ios/playform/IMAPlatform+AppConfig.h" />
+    <source-file src="src/ios/playform/IMAPlatform+AppConfig.m" />
+    <header-file src="src/ios/playform/IMAPlatform+Friend.h" />
+    <source-file src="src/ios/playform/IMAPlatform+Friend.m" />
+    <header-file src="src/ios/playform/IMAPlatform+FriendShip.h" />
+    <source-file src="src/ios/playform/IMAPlatform+FriendShip.m" />
+    <header-file src="src/ios/playform/IMAPlatform+IMSDKCallBack.h" />
+    <source-file src="src/ios/playform/IMAPlatform+IMSDKCallBack.m" />
+    <header-file src="src/ios/playform/IMAPlatform+Login.h" />
+    <source-file src="src/ios/playform/IMAPlatform+Login.m" />
+    <header-file src="src/ios/playform/IMAPlatform.h" />
+    <source-file src="src/ios/playform/IMAPlatform.m" />
+    <header-file src="src/ios/playform/IMAPlatformConfig.h" />
+    <source-file src="src/ios/playform/IMAPlatformConfig.m" />
+    <header-file src="src/ios/playform/IMAPlatformHeaders.h" />
+    <header-file src="src/ios/CDVTxim.h" />
+    <source-file src="src/ios/CDVTxim.m" />
+    <header-file src="src/ios/TIMAdapter.h" />
+
+
     <framework src="libs/ios/ImSDK.framework" />
     <framework src="libs/ios/QALSDK.framework" />
     <framework src="libs/ios/TLSSDK.framework" />
