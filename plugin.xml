@@ -150,7 +150,7 @@
   <!-- ios -->
   <platform name="ios">
     <config-file target="config.xml" parent="/*">
-        <feature name="Wechat">
+        <feature name="Txim">
             <param name="ios-package" value="CDVTxim"/>
             <param name="onload" value="true" />
         </feature>
