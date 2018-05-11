@@ -31,6 +31,8 @@
 - (void)setFriendBlackList:(CDVInvokedUrlCommand *)command;
 - (void)sendMessageToUser:(CDVInvokedUrlCommand *)command;
 - (void)getFriendList:(CDVInvokedUrlCommand *)command;
+- (void)setSelfProfile:(CDVInvokedUrlCommand *)command;
+- (void)getSelfProfile:(CDVInvokedUrlCommand *)command;
 // 初始化
 // 登录
 // 退出登录

@@ -6,7 +6,12 @@ module.exports = {
         return new Promise((resolve,reject)=>{
             exec(function(){
                 if (messageCallback) {
-                    exec(messageCallback, messageCallback, "Txim", "registerNewMessageListerner", [])
+                    var cb = function(msgStr) {
+                        if (typeof msgStr === "string" && msgStr.length > 0) {
+                            messageCallback(JSON.parse(msgStr))
+                        }
+                    }
+                    exec(cb, cb, "Txim", "registerNewMessageListerner", [])
                 }
                 resolve({
                     isSuccess: true
@@ -27,13 +32,6 @@ module.exports = {
                     isSuccess: true
                 })
             }, function(errorInfo){
-                if (typeof errorCode === 'string') {
-                    resolve({
-                        isSuccess: false,
-                        errorMsg: errorInfo
-                    })
-                    return
-                }
                 resolve({
                     isSuccess: false,
                     errorCode: errorInfo
@@ -146,7 +144,7 @@ module.exports = {
             exec(function(list){
                 resolve({
                     isSuccess: true,
-                    friends: list
+                    friends: JSON.parse(list)
                 })
             }, function(errorCode){
                 resolve({
@@ -159,10 +157,9 @@ module.exports = {
 
     sendTextMessage: function (identifier, text) {
         return new Promise((resolve,reject)=>{
-            exec(function(list){
+            exec(function(){
                 resolve({
-                    isSuccess: true,
-                    friends: list
+                    isSuccess: true
                 })
             }, function(errorCode){
                 resolve({
@@ -182,10 +179,9 @@ module.exports = {
             } else {
                 msg.identifierType = 'user'
             }
-            exec(function(list){
+            exec(function(){
                 resolve({
-                    isSuccess: true,
-                    friends: list
+                    isSuccess: true
                 })
             }, function(errorCode){
                 resolve({
@@ -206,10 +202,9 @@ module.exports = {
             } else {
                 msg.identifierType = 'user'
             }
-            exec(function(list){
+            exec(function(){
                 resolve({
-                    isSuccess: true,
-                    friends: list
+                    isSuccess: true
                 })
             }, function(errorCode){
                 resolve({
@@ -229,10 +224,9 @@ module.exports = {
             } else {
                 msg.identifierType = 'user'
             }
-            exec(function(list){
+            exec(function(){
                 resolve({
-                    isSuccess: true,
-                    friends: list
+                    isSuccess: true
                 })
             }, function(errorCode){
                 resolve({
@@ -251,10 +245,9 @@ module.exports = {
             } else {
                 msg.identifierType = 'user'
             }
-            exec(function(list){
+            exec(function(){
                 resolve({
-                    isSuccess: true,
-                    friends: list
+                    isSuccess: true
                 })
             }, function(errorCode){
                 resolve({
@@ -263,5 +256,37 @@ module.exports = {
                 })
             }, "Txim", "sendMessageToUser", [msg]);
         })
+    },
+
+    setSelfProfile: function (profileInfo) {
+        return new Promise((resolve,reject)=>{
+            exec(function(list){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "setSelfProfile", [profileInfo]);
+        })
+    },
+
+    getSelfProfile: function () {
+        return new Promise((resolve,reject)=>{
+            exec(function(profileStr){
+                resolve({
+                    isSuccess: true
+                    profile: JSON.parse(profileStr)
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "getSelfProfile", []);
+        })
     }
+
 };

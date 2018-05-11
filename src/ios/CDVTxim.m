@@ -556,6 +556,71 @@
 //@end
 
 
+- (void)setSelfProfile:(CDVInvokedUrlCommand *)command{
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    
+    NSString *allowFlag = nil;
+    if ([params objectForKey:@"allowFlag"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"allowFlag 参数错误"];
+        return ;
+    }
+    allowFlag = [params objectForKey:@"allowFlag"];
+    
+    
+    
+    TIMFriendProfileOption * option = [[TIMFriendProfileOption alloc] init];
+    option.friendFlags = 0xffff;
+    TIMUserProfile * profile = [[TIMUserProfile alloc] init];
+    if ([allowFlag isEqualToString:@"allow"]) {
+        profile.allowType = TIM_FRIEND_ALLOW_ANY;
+    } else if ([allowFlag isEqualToString:@"deny"]) {
+        profile.allowType = TIM_FRIEND_DENY_ANY;
+    } else {
+        profile.allowType = TIM_FRIEND_NEED_CONFIRM;
+    }
+
+    if ([params objectForKey:@"custom"])
+    {
+        NSString *custom = nil;
+        custom = [params objectForKey:@"custom"];
+        profile.customInfo = [NSJSONSerialization JSONObjectWithData:[custom dataUsingEncoding:NSUTF8StringEncoding] options:0 error: nil];
+    }
+    //    profile.selfSignature = [NSData dataWithBytes:"1234" length:4];
+    //    profile.gender = TIM_GENDER_MALE;
+    //    profile.birthday = 12345;
+    //    profile.location = [NSData dataWithBytes:"location" length:8];
+    //    profile.language = 1;
+    
+    [[TIMFriendshipManager sharedInstance] modifySelfProfile:option profile:profile succ:^() {
+        [self successWithCallbackID:command.callbackId];
+    } fail:^(int code, NSString * err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
+- (void)getSelfProfile:(CDVInvokedUrlCommand *)command{
+    [[TIMFriendshipManager sharedInstance] getSelfProfile:^(TIMUserProfile * profile) {
+//        NSLog(@"GetSelfProfile identifier=%@ nickname=%@ allowType=%d", profile.identifier, profile.nickname, profile.allowType);
+        NSDictionary *profileDic = [[NSDictionary alloc] init];
+        if (profile.allowType == TIM_FRIEND_ALLOW_ANY) {
+            [profileDic setValue:@"allow" forKey:@"allowType"];
+        } else if (profile.allowType == TIM_FRIEND_DENY_ANY) {
+            [profileDic setValue:@"deny" forKey:@"allowType"];
+        } else {
+            [profileDic setValue:@"needConfirm" forKey:@"allowType"];
+        }
+        [profileDic setValue:[self dictionaryToJson: profile.customInfo] forKey:@"custom"];
+        [self successWithCallbackID:command.callbackId withMessage:[self dictionaryToJson:profileDic]];
+    } fail:^(int code, NSString * err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
 /**
  *  新消息通知
  *
