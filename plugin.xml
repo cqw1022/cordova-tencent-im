@@ -38,7 +38,7 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <!-- <meta-data android:name="IM.AppID" android:value="$APPID" /> -->
+      <!-- <meta-data android:name="Txim.AppID" android:value="$APPID" /> -->
       <!-- 【必须】消息收发service -->
       <service
           android:name="com.tencent.qalsdk.service.QalService"
@@ -81,15 +81,15 @@
       </receiver>
     </config-file>
 
-    <source-file src="src/android/IM.java" target-dir="src/hewz/plugins/im" />
-    <source-file src="src/android/IMHelper.java" target-dir="src/hewz/plugins/im" />
-    <source-file src="src/android/Foreground.java" target-dir="src/hewz/plugins/im" />
-    <source-file src="src/android/MessageFactory.java" target-dir="src/hewz/plugins/im" />
-    <source-file src="src/android/PushUtil.java" target-dir="src/hewz/plugins/im" />
-    <source-file src="src/android/event/FriendshipEvent.java" target-dir="src/hewz/plugins/im/event" />
-    <source-file src="src/android/event/GroupEvent.java" target-dir="src/hewz/plugins/im/event" />
-    <source-file src="src/android/event/MessageEvent.java" target-dir="src/hewz/plugins/im/event" />
-    <source-file src="src/android/event/RefreshEvent.java" target-dir="src/hewz/plugins/im/event" />
+    <source-file src="src/android/Txim.java" target-dir="src/cordova/plugins/txim" />
+    <source-file src="src/android/IMHelper.java" target-dir="src/cordova/plugins/txim" />
+    <source-file src="src/android/Foreground.java" target-dir="src/cordova/plugins/txim" />
+    <source-file src="src/android/MessageFactory.java" target-dir="src/cordova/plugins/txim" />
+    <source-file src="src/android/PushUtil.java" target-dir="src/cordova/plugins/txim" />
+    <source-file src="src/android/event/FriendshipEvent.java" target-dir="src/cordova/plugins/txim/event" />
+    <source-file src="src/android/event/GroupEvent.java" target-dir="src/cordova/plugins/txim/event" />
+    <source-file src="src/android/event/MessageEvent.java" target-dir="src/cordova/plugins/txim/event" />
+    <source-file src="src/android/event/RefreshEvent.java" target-dir="src/cordova/plugins/txim/event" />
 
     <source-file src="libs/android/imsdk.jar" target-dir="libs" />
     <source-file src="libs/android/imsdk_msg_ext.jar" target-dir="libs" />

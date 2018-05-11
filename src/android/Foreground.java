@@ -1,4 +1,4 @@
-package hewz.plugins.im;
+package cordova.plugins.txim;
 
 
 

@@ -1,4 +1,4 @@
-package hewz.plugins.im.event;
+package cordova.plugins.txim.event;
 
 
 

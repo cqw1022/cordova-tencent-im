@@ -1,4 +1,4 @@
-package hewz.plugins.im;
+package cordova.plugins.txim;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -17,7 +17,7 @@ import com.tencent.imsdk.TIMMessage;
 import java.util.Observable;
 import java.util.Observer;
 
-import hewz.plugins.im.event.MessageEvent;
+import cordova.plugins.txim.event.MessageEvent;
 
 /**
  * 在线消息通知展示

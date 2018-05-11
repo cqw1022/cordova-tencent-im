@@ -42,8 +42,38 @@ module.exports = {
         })
     },
 
-    
-    addFriendReq: function (identifier) {
+    logout: function () {
+        return new Promise((resolve,reject)=>{
+            exec(function(){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "login", []);
+        })
+    },
+
+
+    deleteFriend: function (identifier) {
+        return new Promise((resolve,reject)=>{
+            exec(function(){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "deleteFriend", [{identifier: identifier.toString()}]);
+        })
+    },
+
+    addFriendReq: function (identifier, remark, addWording) {
         return new Promise((resolve,reject)=>{
             exec(function(){
                 resolve({
@@ -61,7 +91,177 @@ module.exports = {
                     isSuccess: false,
                     errorCode: errorInfo
                 })
-            }, "Txim", "requestAddFriend", [{identifier: identifier.toString(), remark: "remark", addWording: "addWording"}]);
+            }, "Txim", "requestAddFriend", [{identifier: identifier.toString(), remark: addWording, addWording: addWording}]);
+        })
+    },
+
+
+    agreeAddFriend: function (identifier) {
+        return new Promise((resolve,reject)=>{
+            exec(function(){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "agreeAddFriend", [{identifier: identifier.toString()}]);
+        })
+    },
+    
+    refuseAddFriend: function (identifier) {
+        return new Promise((resolve,reject)=>{
+            exec(function(){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "refuseAddFriend", [{identifier: identifier.toString()}]);
+        })
+    },
+
+    setFriendBlackList: function (identifier) {
+        return new Promise((resolve,reject)=>{
+            exec(function(){
+                resolve({
+                    isSuccess: true
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "setFriendBlackList", [{identifier: identifier.toString()}]);
+        })
+    },
+    
+    getFriendList: function (identifier) {
+        return new Promise((resolve,reject)=>{
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "getFriendList", []);
+        })
+    },
+
+    sendTextMessage: function (identifier, text) {
+        return new Promise((resolve,reject)=>{
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "sendMessageToUser", [{text: text}]);
+        })
+    },
+
+
+    sendText: function (identifier, text, isGroup) {
+        return new Promise((resolve,reject)=>{
+            var msg = {text: text}
+            if (isGroup) {
+                msg.identifierType = 'group'
+            } else {
+                msg.identifierType = 'user'
+            }
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "sendMessageToUser", [msg]);
+        })
+    },
+
+
+
+    sendCustomData: function (identifier, customData, isGroup) {
+        return new Promise((resolve,reject)=>{
+            var msg = {customData: customData}
+            if (isGroup) {
+                msg.identifierType = 'group'
+            } else {
+                msg.identifierType = 'user'
+            }
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "sendMessageToUser", [msg]);
+        })
+    },
+
+
+    sendImage: function (identifier, imagePath, isGroup) {
+        return new Promise((resolve,reject)=>{
+            var msg = {imagePath: imagePath}
+            if (isGroup) {
+                msg.identifierType = 'group'
+            } else {
+                msg.identifierType = 'user'
+            }
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "sendMessageToUser", [msg]);
+        })
+    },
+
+    sendAudio: function (identifier, audioPath, length, isGroup) {
+        return new Promise((resolve,reject)=>{
+            var msg = {audioPath: audioPath, length: length.toString()}
+            if (isGroup) {
+                msg.identifierType = 'group'
+            } else {
+                msg.identifierType = 'user'
+            }
+            exec(function(list){
+                resolve({
+                    isSuccess: true,
+                    friends: list
+                })
+            }, function(errorCode){
+                resolve({
+                    isSuccess: false,
+                    errorCode: errorCode
+                })
+            }, "Txim", "sendMessageToUser", [msg]);
         })
     }
 };

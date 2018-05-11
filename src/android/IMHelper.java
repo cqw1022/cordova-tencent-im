@@ -1,4 +1,4 @@
-package hewz.plugins.im;
+package cordova.plugins.txim;
 
 import android.os.Environment;
 import android.util.Log;
@@ -25,13 +25,14 @@ import com.tencent.imsdk.ext.message.TIMManagerExt;
 import com.tencent.imsdk.ext.message.TIMUserConfigMsgExt;
 import com.tencent.imsdk.ext.sns.TIMFriendshipProxyListener;
 import com.tencent.imsdk.ext.sns.TIMUserConfigSnsExt;
+import com.tencent.imsdk.ext.sns.TIMFriendshipManagerExt;
 
 import org.apache.cordova.CallbackContext;
 import java.util.List;
 
-import hewz.plugins.im.event.MessageEvent;
+import cordova.plugins.txim.event.MessageEvent;
 
-import static hewz.plugins.im.IM.instance;
+import static cordova.plugins.txim.IM.instance;
 
 /**
  * Created by hewz on 2017/7/13.
@@ -221,7 +222,7 @@ class IMHelper {
                 callbackContext.success("login success");
                 PushUtil.getInstance();
                 MessageEvent.getInstance();
-                IM.addObserver();
+                Txim.addObserver();
             }
         });
     }
@@ -256,4 +257,242 @@ class IMHelper {
         TIMOfflinePushSettings settings = new TIMOfflinePushSettings();
         callbackContext.success(String.valueOf(settings.isEnabled()));
     }
+
+    static void addFriendReq(String identifier, String remark, String addWording, CallbackContext callbackContext) {
+        TIMAddFriendRequest req = new TIMAddFriendRequest(identifier);
+        req.setRemark(remark);
+        req.setAddWording(addWording);
+        List<TIMAddFriendRequest> reqs = new List<TIMAddFriendRequest>();
+        reqs.push(req)
+        TIMFriendshipManagerExt.getInstance().addFriend(res, new TIMValueCallBack<List<TIMFriendResult>>() {
+            @Override
+            public void onError(int code, String desc){
+                //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                //错误码 code 列表请参见错误码表
+                // Log.e(tag, "addFriend failed: " + code + " desc");
+                callbackContext.error(code);
+            }
+
+            @Override
+            public void onSuccess(List<TIMFriendResult> result){
+                // Log.e(tag, "addFriend succ");
+                // for(TIMFriendResult res : result){
+                //     Log.e(tag, "identifier: " + res.getIdentifer() + " status: " + res.getStatus());
+                // }
+                callbackContext.success('')
+            }
+        })
+    }
+
+    static void agreeAddFriend(String identifier, CallbackContext callbackContext) {
+        TIMFriendAddResponse res = new TIMFriendAddResponse(identifier)
+        res.setType(TIMFriendResponseType.AgreeAndAdd)
+        TIMFriendshipManagerExt.getInstance().addFriendResponse(res,
+                              , new TIMValueCallBack<List<TIMFriendResult>>() {
+                @Override
+                public void onError(int code, String desc){
+                    //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                    //错误码 code 列表请参见错误码表
+                    // Log.e(tag, "addFriend failed: " + code + " desc");
+                    callbackContext.error(code);
+                }
+
+                @Override
+                public void onSuccess(List<TIMFriendResult> result){
+                    // Log.e(tag, "addFriend succ");
+                    // for(TIMFriendResult res : result){
+                    //     Log.e(tag, "identifier: " + res.getIdentifer() + " status: " + res.getStatus());
+                    // }
+                    callbackContext.success('')
+                }
+            }
+        )
+    }
+
+    static void refuseAddFriend(String identifier, CallbackContext callbackContext) {
+        TIMFriendAddResponse res = new TIMFriendAddResponse(identifier)
+        res.setType(TIMFriendResponseType.Reject)
+        TIMFriendshipManagerExt.getInstance().addFriendResponse(res,
+                              , new TIMValueCallBack<List<TIMFriendResult>>() {
+                @Override
+                public void onError(int code, String desc){
+                    //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                    //错误码 code 列表请参见错误码表
+                    // Log.e(tag, "addFriend failed: " + code + " desc");
+                    callbackContext.error(code);
+                }
+
+                @Override
+                public void onSuccess(List<TIMFriendResult> result){
+                    // Log.e(tag, "addFriend succ");
+                    // for(TIMFriendResult res : result){
+                    //     Log.e(tag, "identifier: " + res.getIdentifer() + " status: " + res.getStatus());
+                    // }
+                    callbackContext.success('')
+                }
+            }
+        )
+    }
+    
+
+    static void deleteFriend(String identifier, CallbackContext callbackContext) {
+        DeleteFriendParam params = new DeleteFriendParam();
+        params.setType(TIMDelFriendType.TIM_FRIEND_DEL_BOTH)
+            .setUsers(Collections.singletonList(identifier));
+
+        TIMFriendshipManagerExt.getInstance().deleteFriend(params,
+                              , new TIMValueCallBack<List<TIMFriendResult>>() {
+                @Override
+                public void onError(int code, String desc){
+                    //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                    //错误码 code 列表请参见错误码表
+                    // Log.e(tag, "addFriend failed: " + code + " desc");
+                    callbackContext.error(code);
+                }
+
+                @Override
+                public void onSuccess(List<TIMFriendResult> result){
+                    // Log.e(tag, "addFriend succ");
+                    // for(TIMFriendResult res : result){
+                    //     Log.e(tag, "identifier: " + res.getIdentifer() + " status: " + res.getStatus());
+                    // }
+                    callbackContext.success('')
+                }
+            }
+        )
+    }
+
+
+    static void setFriendBlackList(String identifier, CallbackContext callbackContext) {
+        // DeleteFriendParam params = new DeleteFriendParam();
+        // params.setType(TIMDelFriendType.TIM_FRIEND_DEL_BOTH)
+        //     .setUsers(Collections.singletonList("identifier"));
+
+        TIMFriendshipManagerExt.getInstance().addBlackList(Collections.singletonList(identifier),
+                              , new TIMValueCallBack<List<TIMFriendResult>>() {
+                @Override
+                public void onError(int code, String desc){
+                    //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                    //错误码 code 列表请参见错误码表
+                    // Log.e(tag, "addFriend failed: " + code + " desc");
+                    callbackContext.error(code);
+                }
+
+                @Override
+                public void onSuccess(List<TIMFriendResult> result){
+                    // Log.e(tag, "addFriend succ");
+                    // for(TIMFriendResult res : result){
+                    //     Log.e(tag, "identifier: " + res.getIdentifer() + " status: " + res.getStatus());
+                    // }
+                    callbackContext.success('')
+                }
+            }
+        )
+    }
+
+    static void getFriendList(CallbackContext callbackContext) {
+        TIMFriendshipManagerExt.getInstance().getFriendList(new TIMValueCallBack<List<TIMUserProfile>>(){
+            @Override
+            public void onError(int code, String desc){
+                //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                //错误码 code 列表请参见错误码表
+                // Log.e(tag, "getFriendList failed: " + code + " desc");
+                callbackContext.error(code)
+            }
+
+            @Override
+            public void onSuccess(List<TIMUserProfile> result){
+                for(TIMUserProfile res : result){
+                    Log.e(tag, "identifier: " + res.getIdentifier() + " nickName: " + res.getNickName() 
+                            + " remark: " + res.getRemark());
+                }
+            }
+        });
+    }
+
+    static sendMessageToUser(JSONObject data, CallbackContext callbackContext) {
+        TIMConversation conversation = null;
+        String identifier = data.getString("identifier");
+        String identifierType = data.getString("identifierType");
+        if (identifierType.equals('group')) {
+            conversation = TIMManager.getInstance().getConversation(
+            TIMConversationType.Group,      //会话类型：群组
+            identifier);
+        } else {
+            conversation = TIMManager.getInstance().getConversation(
+            TIMConversationType.C2C,      //会话类型：群组
+            identifier);
+        }
+
+        if (conversation == null) {
+            callbackContext.error("conversation null");
+            return;
+        }
+        
+        //构造一条消息
+        TIMMessage msg = new TIMMessage();
+        if (data.has('text')) {
+            //添加文本内容
+            TIMTextElem elem = new TIMTextElem();
+            elem.setText(data.getString('text'));
+            //将elem添加到消息
+            if(msg.addElement(elem) != 0) {
+                Log.d(tag, "addElement failed");
+                callbackContext.error("addElement failed");
+               return;
+            }
+        }
+        else if (data.has('customData')) {
+            //添加文本内容
+            TIMCustomElem elem ＝ new TIMCustomElem();
+            elem.setData(data.getString('customData').getBytes());      //自定义 byte[]
+            //将elem添加到消息
+            if(msg.addElement(elem) != 0) {
+                Log.d(tag, "addElement failed");
+                callbackContext.error("addElement failed");
+               return;
+            }
+        }
+        else if (data.has('imagePath')) {
+            //添加图片
+            TIMImageElem elem = new TIMImageElem();
+            elem.setPath(data.getString('imagePath'));
+
+            //将elem添加到消息
+            if(msg.addElement(elem) != 0) {
+                Log.d(tag, "addElement failed");
+                callbackContext.error("addElement failed");
+               return;
+            }
+        }
+        else if (data.has('audioPath')) {
+            //添加语音
+            TIMSoundElem elem = new TIMSoundElem();
+            elem.setPath(data.getString('audioPath')); //填写语音文件路径
+            elem.setDuration( Integer.parseInt( data.getString('length') ) );  //填写语音时长
+
+            //将elem添加到消息
+            if(msg.addElement(elem) != 0) {
+                Log.d(tag, "addElement failed");
+                callbackContext.error("addElement failed");
+               return;
+            }
+        }
+
+        //发送消息
+        conversation.sendMessage(msg, new TIMValueCallBack<TIMMessage>() {//发送消息回调
+            @Override
+            public void onError(int code, String desc) {//发送消息失败
+                //错误码 code 和错误描述 desc，可用于定位请求失败原因
+                //错误码 code 含义请参见错误码表
+                Log.d(tag, "send message failed. code: " + code + " errmsg: " + desc);
+                callbackContext.error(code);
+            }
+
+            @Override
+            public void onSuccess(TIMMessage msg) {//发送消息成功
+                callbackContext.success();
+            }
+        });
+
 }
