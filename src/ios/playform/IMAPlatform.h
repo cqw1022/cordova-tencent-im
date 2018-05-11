@@ -22,6 +22,8 @@ typedef EQALNetworkType TCQALNetwork;
 }
 
 
+@property (nonatomic) NSMutableArray          *conversationList;
+
 //@property (nonatomic, readonly) IMAHost                 *host;
 
 //@property (nonatomic, readonly) IMAConversationManager  *conversationMgr;
@@ -34,7 +36,7 @@ typedef EQALNetworkType TCQALNetwork;
 
 // 被踢下线时，如果当前在直播的时候，进行调用
 //@property (nonatomic, copy) CommonVoidBlock offlineExitLivingBlock;
-
+- (void) refresh;
 + (instancetype)configWith:(IMAPlatformConfig *)cfg;
 
 // 配置自定义的_host，hostcls须为IMAHost的子类

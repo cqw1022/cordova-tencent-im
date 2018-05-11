@@ -6,6 +6,7 @@
 //  Copyright © 2016年 AlexiChen. All rights reserved.
 //
 
+#import <IMMessageExt/IMMessageExt.h>
 #import "IMAPlatform.h"
 
 @interface IMAPlatform ()
@@ -27,7 +28,8 @@ static IMAPlatform *_sharedInstance = nil;
     
     dispatch_once(&predicate, ^{
         _sharedInstance = [[IMAPlatform alloc] init];
-        [_sharedInstance configIMSDK:cfg];
+        _sharedInstance.conversationList = [[NSMutableArray alloc] init];
+//        [_sharedInstance configIMSDK:cfg];
     });
     
     return _sharedInstance;
@@ -248,8 +250,16 @@ static Class kHostClass = Nil;
 //    
 //    //    }
 //}
-
-
+- (void) refresh
+{
+    NSArray *conversationList = [[TIMManager sharedInstance] getConversationList];
+    
+    
+    for (TIMConversation *conversation in conversationList)
+    {
+        [[self conversationList] addObject:conversation];
+    }
+}
 //消息撤回通知
 - (void)onRevokeMessage:(TIMMessageLocator*)locator
 {

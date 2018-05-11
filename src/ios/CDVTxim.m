@@ -7,6 +7,8 @@
 //
 
 #import "CDVTxim.h"
+#import <IMMessageExt/IMMessageExt.h>
+#import <IMFriendshipExt/IMFriendshipExt.h>
 
 @implementation CDVTxim
 
@@ -19,72 +21,97 @@
 
 - (void)initSdk:(CDVInvokedUrlCommand *)command
 {
-    [self.commandDelegate runInBackground:^{
-        // check arguments
-        NSDictionary *params = [command.arguments objectAtIndex:0];
-        if (!params)
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
-            return ;
-        }
-
-        NSString *sdkAppId = nil;
-        NSString *accountType = nil;
-
-        // check the params
-        if (![params objectForKey:@"sdkAppId"])
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
-            return ;
-        }
-        sdkAppId = [params objectForKey:@"sdkAppId"];
-
-        if (![params objectForKey:@"accountType"])
-        {
-            [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
-            return ;
-        }
-        accountType = [params objectForKey:@"accountType"];
-
-
-        TIMManager *manager = [TIMManager sharedInstance];
-        TIMSdkConfig *config = [[TIMSdkConfig alloc] init];
-        config.sdkAppId = [sdkAppId intValue];
-        config.accountType = accountType;
-//        config.sdkAppId = 1400082284;
-//        config.accountType = @"26309";
-        config.disableCrashReport = NO;
+    // check arguments
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
     
-        [manager initSdk:config];
-
-        BOOL isAutoLogin = [IMAPlatform isAutoLogin];
-        if (isAutoLogin)
-        {
-            self._loginParam = [IMALoginParam loadFromLocal];
-        }
-        else
-        {
-            self._loginParam = [[IMALoginParam alloc] init];
-        }
-
-        [IMAPlatform configWith:self._loginParam.config];
+    NSString *sdkAppId = nil;
+    NSString *accountType = nil;
     
-//    [self login:NULL];
-
-        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
-
-        [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
-    }];
+    // check the params
+    if (![params objectForKey:@"sdkAppId"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"sdkAppId参数错误"];
+        return ;
+    }
+    sdkAppId = [params objectForKey:@"sdkAppId"];
+    
+    if (![params objectForKey:@"accountType"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"accountType参数错误"];
+        return ;
+    }
+    accountType = [params objectForKey:@"accountType"];
+    
+    
+    TIMManager *manager = [TIMManager sharedInstance];
+    TIMSdkConfig *config = [[TIMSdkConfig alloc] init];
+    config.sdkAppId = [sdkAppId intValue];
+    config.accountType = accountType;
+    //        config.sdkAppId = 1400082284;
+    //        config.accountType = @"26309";
+    config.disableCrashReport = NO;
+    config.connListener = self;
+    
+    int result = [manager initSdk:config];
+    
+    BOOL isAutoLogin = [IMAPlatform isAutoLogin];
+    if (isAutoLogin)
+    {
+        self._loginParam = [IMALoginParam loadFromLocal];
+    }
+    else
+    {
+        self._loginParam = [[IMALoginParam alloc] init];
+    }
+    
+    //        [IMAPlatform configWith:self._loginParam.config];
+    TIMUserConfig *userConfig = [[TIMUserConfig alloc] init];
+    //    userConfig.disableStorage = YES;//禁用本地存储（加载消息扩展包有效）
+    //    userConfig.disableAutoReport = YES;//禁止自动上报（加载消息扩展包有效）
+    //    userConfig.enableReadReceipt = YES;//开启C2C已读回执（加载消息扩展包有效）
+    userConfig.disableRecnetContact = NO;//不开启最近联系人（加载消息扩展包有效）
+    userConfig.disableRecentContactNotify = YES;//不通过onNewMessage:抛出最新联系人的最后一条消息（加载消息扩展包有效）
+    userConfig.enableFriendshipProxy = YES;//开启关系链数据本地缓存功能（加载好友扩展包有效）
+    userConfig.enableGroupAssistant = YES;//开启群组数据本地缓存功能（加载群组扩展包有效）
+    TIMGroupInfoOption *giOption = [[TIMGroupInfoOption alloc] init];
+    giOption.groupFlags = 0xffffff;//需要获取的群组信息标志（TIMGetGroupBaseInfoFlag）,默认为0xffffff
+    giOption.groupCustom = nil;//需要获取群组资料的自定义信息（NSString*）列表
+    userConfig.groupInfoOpt = giOption;//设置默认拉取的群组资料
+    TIMGroupMemberInfoOption *gmiOption = [[TIMGroupMemberInfoOption alloc] init];
+    gmiOption.memberFlags = 0xffffff;//需要获取的群成员标志（TIMGetGroupMemInfoFlag）,默认为0xffffff
+    gmiOption.memberCustom = nil;//需要获取群成员资料的自定义信息（NSString*）列表
+    userConfig.groupMemberInfoOpt = gmiOption;//设置默认拉取的群成员资料
+    TIMFriendProfileOption *fpOption = [[TIMFriendProfileOption alloc] init];
+    fpOption.friendFlags = 0xffffff;//需要获取的好友信息标志（TIMProfileFlag）,默认为0xffffff
+    fpOption.friendCustom = nil;//需要获取的好友自定义信息（NSString*）列表
+    fpOption.userCustom = nil;//需要获取的用户自定义信息（NSString*）列表
+    userConfig.friendProfileOpt = fpOption;//设置默认拉取的好友资料
+    //        userConfig.userStatusListener = self;//用户登录状态监听器
+    userConfig.refreshListener = self;//会话刷新监听器（未读计数、已读同步）（加载消息扩展包有效）
+    //    userConfig.receiptListener = self;//消息已读回执监听器（加载消息扩展包有效）
+    //    userConfig.messageUpdateListener = self;//消息svr重写监听器（加载消息扩展包有效）
+    //    userConfig.uploadProgressListener = self;//文件上传进度监听器
+    //    userConfig.groupEventListener todo
+    userConfig.messgeRevokeListener = self;
+    //        userConfig.friendshipListener = self;//关系链数据本地缓存监听器（加载好友扩展包、enableFriendshipProxy有效）
+    //        userConfig.groupListener = self;//群组据本地缓存监听器（加载群组扩展包、enableGroupAssistant有效）
+    result = [manager setUserConfig:userConfig];
+    [[TIMManager sharedInstance] addMessageListener:self];
+    
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"调起成功"];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
 }
 
-// - (IMAConversationManager *)conversationMgr
-// {
-//     if (!_conversationMgr)
-//     {
-//         _conversationMgr = [[IMAConversationManager alloc] init];
-//     }
-//     return _conversationMgr;
-// }
+
+- (void)registerNewMessageListerner:(CDVInvokedUrlCommand *) command
+{
+    self.commonCallbackId = command.callbackId;
+}
 
 - (void)login:(CDVInvokedUrlCommand *)command
 {
@@ -126,27 +153,12 @@
     self._loginParam.identifier = identifier;
     self._loginParam.userSig = userSig;
     self._loginParam.appidAt3rd = appidAt3rd;
-//    self._loginParam.identifier = @"admin";
-//    self._loginParam.userSig = @"eJxtzE1vgjAAxvHv0qvLUsv7kh0EWVLUBRVI4NJUWrvO0TVYZM7su48p3nZ9fnn*F5Att49Ua8kINcRqGXgCUxtC6CPk2*Dh5nX92SlDzFnzwZFrwWAkybgyci95OwBljVQjHNmBXLv-BY1s-kJTBzmea3mBO*78S8uWE7o31x5yAjQ870Uphm0V5xFezz9WOClVOPkuDhgXvdBdWdpxtO0XL0WSbbo0yZOUSn8277HIl-LkxBWdoSYs86gSxzb11lXdB*fT60Ts3tUuXGyqt8yGz*DnF9CuUwk_";
-//    self._loginParam.tokenTime = [[NSDate date] timeIntervalSince1970];
-//    self._loginParam.appidAt3rd = @"1400082284";
     
-//    [[TIMManager sharedInstance] logout:^(){
-//        [self successWithCallbackID:self.currentCallbackId];
-//    } fail:^(int code, NSString *msg) {
-//        [self failWithCallbackID:self.currentCallbackId withMessage:msg];
-//    }];
-   [[IMAPlatform sharedInstance] login:self._loginParam succ:^{
-       
-//        DebugLog(@"登录成功:%@ tinyid:%llu sig:%@", param.identifier, [[IMSdkInt sharedInstance] getTinyId], param.userSig);
-       // [IMAPlatform setAutoLogin:YES];
-       //去掉此处的获取群里表，放到IMAPlatform+IMSDKCallBack 的 onRefresh中去，如果直接在这里获取群里表，第一次安装app时，会拉去不到群列表
-//        [ws configGroup];
-       
-       [self successWithCallbackID:self.currentCallbackId];
-   } fail:^(int code, NSString *msg) {
-       [self failWithCallbackID:self.currentCallbackId withCode:code];
-   }];
+    [[TIMManager sharedInstance] login:self._loginParam succ:^{
+        [self successWithCallbackID:self.currentCallbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:self.currentCallbackId withCode:code];
+    }];
 }
 
 - (void)logout:(CDVInvokedUrlCommand *)command
@@ -160,91 +172,533 @@
 }
 
 
-// - (void)requestAddFriend:(CDVInvokedUrlCommand *)command
-// {
+- (void)sendText:(TIMConversation*)conversation text:(NSString *)text callbackId: (NSString *) callbackId
+{
+    TIMTextElem *elem = [[TIMTextElem alloc] init];
+    elem.text = text;
+    TIMMessage *msg = [[TIMMessage alloc] init];
+    [msg addElem:elem];
+    
+    [conversation sendMessage:msg succ:^(){
+        [self successWithCallbackID:callbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:callbackId withCode:code];
+    }];
+}
+
+- (void)sendAudioRecord:(TIMConversation*)conversation soundSavePath:(NSString *)soundSavePath soundDur:(int) dur callbackId: (NSString *) callbackId
+{
+    TIMSoundElem *elem = [[TIMSoundElem alloc] init];
+    elem.path = soundSavePath;
+    elem.second = (int)dur;
+    
+    TIMMessage *msg = [[TIMMessage alloc] init];
+    [msg addElem:elem];
+    
+    [conversation sendMessage:msg succ:^(){
+        [self successWithCallbackID:callbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:callbackId withCode:code];
+    }];
+}
+
+- (void)sendImage:(TIMConversation*)conversation filePath:(NSString *)filePath isOrigal:(bool) origal callbackId: (NSString *) callbackId
+{
+    TIMImageElem *elem = [[TIMImageElem alloc] init];
+    elem.path = filePath;
+    
+    if (origal)
+    {
+        elem.level = TIM_IMAGE_COMPRESS_ORIGIN;
+    }
+    else
+    {
+        elem.level = TIM_IMAGE_COMPRESS_HIGH;
+    }
+    
+    TIMMessage *msg = [[TIMMessage alloc] init];
+    [msg addElem:elem];
+    
+    [conversation sendMessage:msg succ:^(){
+        [self successWithCallbackID:callbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:callbackId withCode:code];
+    }];
+}
+
+- (void)sendCustom:(TIMConversation*)conversation data:(NSData *)data callbackId: (NSString *) callbackId
+{
+    TIMCustomElem *elem = [[TIMCustomElem alloc] init];
+    elem.data = data;
+    TIMMessage *msg = [[TIMMessage alloc] init];
+    [msg addElem:elem];
+    
+    [conversation sendMessage:msg succ:^(){
+        [self successWithCallbackID:callbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:callbackId withCode:code];
+    }];
+}
+
+
+- (void)sendMessageToUser:(CDVInvokedUrlCommand *)command{
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    NSString *identifier = nil;
+    if (![params objectForKey:@"identifier"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+        return ;
+    }
+    identifier = [params objectForKey:@"identifier"];
+    
+    NSString *identifierType = nil;
+    if (![params objectForKey:@"identifierType"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifierType 参数错误"];
+        return ;
+    }
+    identifierType = [params objectForKey:@"identifierType"];
+    
+    TIMConversation * conversation;
+    if ([identifierType isEqualToString:@"user"]) {
+        conversation = [[TIMManager sharedInstance] getConversation:TIM_C2C receiver:identifier];
+    } else {
+        conversation =  [[TIMManager sharedInstance] getConversation:TIM_GROUP receiver:identifier];
+    }
+    
+    if ([params objectForKey:@"text"])
+    {
+        NSString *text = [params objectForKey:@"text"];
+        [self sendText:conversation text:text callbackId:command.callbackId];
+        return;
+    }
+    
+    if ([params objectForKey:@"customData"])
+    {
+        NSString *customData = [params objectForKey:@"customData"];
+        [self sendCustom:conversation data:[customData dataUsingEncoding:NSUTF8StringEncoding] callbackId:command.callbackId];
+        return;
+    }
+    
+    if ([params objectForKey:@"imagePath"])
+    {
+        NSString *imagePath = [params objectForKey:@"imagePath"];
         
+        bool isOrigal = false;
+        if ([params objectForKey:@"isOrigal"])
+        {
+            isOrigal = true;
+        }
+        
+        [self sendImage:conversation filePath:imagePath isOrigal:isOrigal callbackId:command.callbackId];
+        return;
+    }
+    
+    
+    if ([params objectForKey:@"audioPath"])
+    {
+        NSString *audioPath = [params objectForKey:@"audioPath"];
+        
+        NSString *lenStr = nil;
+        if (![params objectForKey:@"length"])
+        {
+            [self failWithCallbackID:command.callbackId withMessage:@"length 参数错误"];
+            return ;
+        }
+        lenStr = [params objectForKey:@"lenStr"];
+        
+        [self sendAudioRecord:conversation soundSavePath:audioPath soundDur:[lenStr intValue] callbackId:command.callbackId];
+        return;
+    }
+    
+    [self failWithCallbackID:command.callbackId withMessage:@"没有适合的类型"];
+}
+
+- (void)getFriendList:(CDVInvokedUrlCommand *)command{
+    
+    [[TIMFriendshipManager sharedInstance] getFriendList:^(NSArray *friends) {
+        [self successWithCallbackID:command.callbackId withMessage:[self arrayToJson:friends]];
+    } fail:^(int code, NSString *err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
+
+- (void)setFriendBlackList:(CDVInvokedUrlCommand *)command{
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    NSString *identifier = nil;
+    if (![params objectForKey:@"identifier"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+        return ;
+    }
+    identifier = [params objectForKey:@"identifier"];
+    
+    [[TIMFriendshipManager sharedInstance] addBlackList:@[identifier] succ:^(NSArray *friends) {
+        [self successWithCallbackID:command.callbackId];
+    } fail:^(int code, NSString *err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
+
+- (void)agreeAddFriend:(CDVInvokedUrlCommand *)command {
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    NSString *identifier = nil;
+    if (![params objectForKey:@"identifier"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+        return ;
+    }
+    identifier = [params objectForKey:@"identifier"];
+    
+    TIMFriendResponse *response = [[TIMFriendResponse alloc] init];
+    response.identifier = identifier;
+    response.responseType = TIM_FRIEND_RESPONSE_AGREE_AND_ADD;
+    [[TIMFriendshipManager sharedInstance] doResponse:@[response] succ:^(NSArray *data) {
+        [self successWithCallbackID:command.callbackId];
+    } fail:^(int code, NSString *err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
+
+- (void)refuseAddFriend:(CDVInvokedUrlCommand *)command {
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    NSString *identifier = nil;
+    if (![params objectForKey:@"identifier"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+        return ;
+    }
+    identifier = [params objectForKey:@"identifier"];
+    
+    TIMFriendResponse *response = [[TIMFriendResponse alloc] init];
+    response.identifier = identifier;
+    response.responseType = TIM_FRIEND_RESPONSE_REJECT;
+    [[TIMFriendshipManager sharedInstance] doResponse:@[response] succ:^(NSArray *data) {
+        [self successWithCallbackID:command.callbackId];
+    } fail:^(int code, NSString *err) {
+        [self failWithCallbackID:command.callbackId withCode:code];
+    }];
+}
+
+- (void)deleteFriend:(CDVInvokedUrlCommand *)command {
+    NSDictionary *params = [command.arguments objectAtIndex:0];
+    if (!params)
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+        return ;
+    }
+    
+    NSString *identifier = nil;
+    if (![params objectForKey:@"identifier"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+        return ;
+    }
+    identifier = [params objectForKey:@"identifier"];
+    
+    [[TIMFriendshipManager sharedInstance] delFriend:TIM_FRIEND_DEL_BOTH users:@[identifier] succ:^(NSArray * arr) {
+        [self successWithCallbackID:command.callbackId];
+    } fail:^(int code, NSString * err) {
+//        NSLog(@"add friend fail: code=%d err=%@", code, err);
+        [self failWithCallbackID:command.callbackId withError: err];
+    }];
+//    - (int)delFriend:(TIMDelFriendType)delType users:(NSArray*)users succ:(TIMFriendSucc)succ fail:(TIMFail)fail;
+}
+ - (void)requestAddFriend:(CDVInvokedUrlCommand *)command
+ {
+     
+     NSDictionary *params = [command.arguments objectAtIndex:0];
+     if (!params)
+     {
+         [self failWithCallbackID:command.callbackId withMessage:@"参数格式错误"];
+         return ;
+     }
 //     self.currentCallbackId = command.callbackId;
-//     NSMutableArray * users = [[NSMutableArray alloc] init];
+     NSMutableArray * users = [[NSMutableArray alloc] init];
 
 
-//     NSString *identifier = nil;
-//     NSString *remark = nil;
-//     NSString *addWording = nil;
+     NSString *identifier = nil;
+     NSString *remark = nil;
+     NSString *addWording = nil;
 
-//     // check the params
-//     if (![params objectForKey:@"identifier"])
-//     {
-//         [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
-//         return ;
-//     }
-//     identifier = [params objectForKey:@"identifier"];
+     // check the params
+     if (![params objectForKey:@"identifier"])
+     {
+         [self failWithCallbackID:command.callbackId withMessage:@"identifier 参数错误"];
+         return ;
+     }
+     identifier = [params objectForKey:@"identifier"];
 
-//     if (![params objectForKey:@"remark"])
-//     {
-//         [self failWithCallbackID:command.callbackId withMessage:@"remark 参数错误"];
-//         return ;
-//     }
-//     remark = [params objectForKey:@"remark"];
+     if (![params objectForKey:@"remark"])
+     {
+         [self failWithCallbackID:command.callbackId withMessage:@"remark 参数错误"];
+         return ;
+     }
+     remark = [params objectForKey:@"remark"];
 
-//     if (![params objectForKey:@"addWording"])
-//     {
-//         [self failWithCallbackID:command.callbackId withMessage:@"addWording 参数错误"];
-//         return ;
-//     }
-//     addWording = [params objectForKey:@"addWording"];
-
-
-
-//     TIMAddFriendRequest* req = [[TIMAddFriendRequestalloc] init];
-//     // 添加好友 iOS_002
-//     req.identifier = identifier;
-//     // 添加备注 002Remark
-//     req.remark = remark;
-//     // 添加理由
-//     req.addWording = addWording;
-//     [users addObject:req];
-//     [[TIMFriendshipManager sharedInstance] addFriend:users succ:^(NSArray * arr) {
-//         for (TIMFriendResult * res in arr) {
-//             if (res.status != TIM_FRIEND_STATUS_SUCC) {
-//                 [self successWithCallbackID:command.callbackId];
-//             }
-//             else {
-//                 NSLog(@"AddFriend succ: user=%@ status=%d", res.identifier, res.status);
-//                 [self failWithCallbackID:command.callbackId withMessage: res.status];
-//             }
-//         }
-//     } fail:^(int code, NSString * err) {
-//         NSLog(@"add friend fail: code=%d err=%@", code, err);
-//         [self failWithCallbackID:command.callbackId withError: err];
-//     }];
-
-// }
-
-// - (void)getConversation:(CDVInvokedUrlCommand *)command
-// {
-//     self.currentCallbackId = command.callbackId;
-//     TIMConversationType conversationType = nil;
-//     NSString *receiver = nil;
-
-//     // check the params
-//     if (![params objectForKey:@"conversationType"])
-//     {
-//         [self failWithCallbackID:command.callbackId withMessage:@"conversationType参数错误"];
-//         return ;
-//     }
-//     conversationType = [params objectForKey:@"conversationType"];
-
-//     if (![params objectForKey:@"receiver"])
-//     {
-//         [self failWithCallbackID:command.callbackId withMessage:@"receiver参数错误"];
-//         return ;
-//     }
-//     receiver = [params objectForKey:@"receiver"];
-//     self.conversation = [[TIMManager sharedInstance] getConversation:conversationType receiver:receiver];
-
-// }
+     if (![params objectForKey:@"addWording"])
+     {
+         [self failWithCallbackID:command.callbackId withMessage:@"addWording 参数错误"];
+         return ;
+     }
+     addWording = [params objectForKey:@"addWording"];
 
 
+
+     TIMAddFriendRequest* req = [[TIMAddFriendRequest alloc] init];
+     // 添加好友 iOS_002
+//     req.identifier = @"10515";
+     req.identifier = identifier;
+     // 添加备注 002Remark
+     req.remark = remark;
+     // 添加理由
+     req.addWording = addWording;
+     [users addObject:req];
+     
+
+     [[TIMFriendshipManager sharedInstance] addFriend:users succ:^(NSArray * arr) {
+         for (TIMFriendResult * res in arr) {
+             if (res.status != TIM_FRIEND_STATUS_SUCC) {
+//                 if (res.status == TIM_ADD_FRIEND_STATUS_ALREADY_FRIEND) {
+//                      [[TIMFriendshipManager sharedInstance] delFriend:TIM_FRIEND_DEL_BOTH users:@[req.identifier] succ:^(NSArray *array) {
+//
+//                          // 从本地好友中找到该人，并删除
+//                          // 只会返回一个
+//                          for (TIMFriendResult *res in array)
+//                          {
+//                 //             IMAUser *temp = [[IMAUser alloc] initWith:res.identifier];
+//                 //             [self.contactMgr removeUser:temp];
+//                          }
+//
+//                      } fail:^(int code, NSString * err) {
+//                                   NSLog(@"add friend fail: code=%d err=%@", code, err);
+//                                   [self failWithCallbackID:command.callbackId withError: err];
+//                               }];
+//                 }
+                 [self failWithCallbackID:command.callbackId withCode: res.status];
+             }
+             else {
+                 NSLog(@"AddFriend succ: user=%@ status=%d", res.identifier, res.status);
+                 [self successWithCallbackID:command.callbackId];
+             }
+         }
+     } fail:^(int code, NSString * err) {
+         NSLog(@"add friend fail: code=%d err=%@", code, err);
+         [self failWithCallbackID:command.callbackId withError: err];
+     }];
+
+ }
+
+
+//消息撤回通知
+- (void)onRevokeMessage:(TIMMessageLocator*)locator
+{
+    // [[NSNotificationCenter defaultCenter] postNotificationName:kIMAMSG_RevokeNotification object:locator];
+    // [self changeLastMsg:locator];
+}
+
+
+#pragma mark -TIMRefreshListener
+
+- (void)onRefresh
+{
+    // TODO:重新刷新会话列列
+//    DebugLog(@"=========>>>>> 刷新会话列表");
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self.contactMgr asyncConfigContact];//从以前的OnProxyStatusChange里面移动过来的
+//        [self.conversationMgr asyncConversationList];
+//        [[TIMManager sharedInstance] addMessageListener:self.conversationMgr];
+//    });
+//
+//
+//    [self.contactMgr asyncConfigGroup];
+//    [[TIMManager sharedInstance] addMessageListener:self];
+//    TIMMessageListenerImpl * impl = [[TIMMessageListenerImpl alloc] init];
+//    [IMAPlatform configWith:NULL];
+//    dispatch_async(dispatch_get_main_queue(), ^{
+////        [[TIMManager sharedInstance] addMessageListener:self];
+//        [[TIMManager sharedInstance] addMessageListener:[IMAPlatform sharedInstance]];
+//
+//    });
+//    [[TIMManager sharedInstance] addMessageListener:[IMAPlatform configWith:NULL]];
+}
+
+- (void)onRefreshConversations:(NSArray*)conversations
+{
+//    [self.conversationMgr asyncConversationList];
+    [[IMAPlatform sharedInstance] refresh];
+}
+
+//@end
+
+
+/**
+ *  新消息通知
+ *
+ *  @param msgs 新消息列表，TIMMessage 类型数组
+ */
+- (void)onNewMessage:(NSArray *)msgs
+{
+    for (TIMMessage *msg in msgs)
+    {
+        TIMConversation *conv = [msg getConversation];
+        BOOL isSystemMsg = [conv getType] == TIM_SYSTEM;
+        BOOL isAddGroupReq = NO;
+//        BOOL isAddFriendReq = NO;
+//        BOOL isContinue = YES;
+        if (isSystemMsg)
+        {
+            int elemCount = [msg elemCount];
+            for (int i = 0; i < elemCount; i++)
+            {
+                TIMElem* elem = [msg getElem:i];
+                TIMSNSSystemElem * system_elem = (TIMSNSSystemElem * )elem;
+                if ([elem isKindOfClass:[TIMGroupSystemElem class]])
+                {
+                    TIMGroupSystemElem *gse = (TIMGroupSystemElem *)elem;
+                    if (gse.type == TIM_GROUP_SYSTEM_ADD_GROUP_REQUEST_TYPE)
+                    {
+//                        isContinue = NO;
+                        isAddGroupReq = YES;
+                    }
+                }
+                else if ([elem isKindOfClass:[TIMSNSSystemElem class]])
+                {
+                    TIM_SNS_SYSTEM_TYPE type = ((TIMSNSSystemElem *)elem).type;
+                    if (type == TIM_SNS_SYSTEM_ADD_FRIEND_REQ)
+                    {
+                        if (!msg.isSelf)
+                        {
+//                            isContinue = NO;
+                            for (TIMSNSChangeInfo * info in [system_elem users]) {
+//                                NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
+                                NSDictionary *addFriendReq = [[NSDictionary alloc] init];
+                                [addFriendReq setValue:@"addFriendReq" forKey:@"type"];
+                                [addFriendReq setValue:[info identifier] forKey:@"identifier"];
+                                [addFriendReq setValue:[info wording] forKey:@"wording"];
+                                [addFriendReq setValue:[info source] forKey:@"source"];
+                                [self commanCallback:addFriendReq];
+                            }
+
+                        }
+                    } else if (type == TIM_SNS_SYSTEM_ADD_FRIEND) {
+//                        isContinue = NO;
+                        for (TIMSNSChangeInfo * info in [system_elem users]) {
+//                            NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
+                            NSDictionary *addFriend = [[NSDictionary alloc] init];
+                            [addFriend setValue:@"addFriend" forKey:@"type"];
+                            [addFriend setValue:[info identifier] forKey:@"identifier"];
+                            [self commanCallback:addFriend];
+                        }
+                    } else if (type == TIM_SNS_SYSTEM_DEL_FRIEND) {
+                        for (TIMSNSChangeInfo * info in [system_elem users]) {
+//                            NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
+                            NSDictionary *delFriend = [[NSDictionary alloc] init];
+                            [delFriend setValue:@"delFriend" forKey:@"type"];
+                            [delFriend setValue:[info identifier] forKey:@"identifier"];
+                            [self commanCallback:delFriend];
+                        }
+                    }
+                }
+                else {
+                    //自定义消息系统消息，暂时不处理
+                }
+            }
+            continue;
+        }
+
+        if (!msg.isSelf) {
+            NSString *receiver = [conv getReceiver];
+
+            int elemCount = [msg elemCount];
+            for (int i = 0; i < elemCount; i++)
+            {
+                TIMElem* elem = [msg getElem:i];
+                NSDictionary *chat = [[NSDictionary alloc] init];
+                [chat setValue:@"chat" forKey:@"type"];
+                [chat setValue:receiver forKey:@"receiver"];
+
+                if ([conv getType] == TIM_C2C ) {
+                    [chat setValue:@"private" forKey:@"chatType"];
+                } else {
+                    [chat setValue:@"group" forKey:@"chatType"];
+                }
+                if ([elem isKindOfClass:[TIMTextElem class]]) {
+                    TIMTextElem *textElem = (TIMTextElem *)elem;
+                    [chat setValue:[textElem text] forKey:@"text"];
+                } else if ([elem isKindOfClass:[TIMImageElem class]]) {
+                    TIMImageElem *imgElem = (TIMImageElem *)elem;
+                    [chat setValue:[imgElem path] forKey:@"imgUrl"];
+                } else if ([elem isKindOfClass:[TIMFaceElem class]]) {
+                    TIMFaceElem *faceElem = (TIMFaceElem *)elem;
+                    [chat setValue:[NSNumber numberWithInteger: [faceElem index]] forKey:@"faceId"];
+                } else if ([elem isKindOfClass:[TIMSoundElem class]]) {
+                    TIMSoundElem *soundElem = (TIMSoundElem *)elem;
+                    [chat setValue:[soundElem path] forKey:@"sound"];
+                } else if ([elem isKindOfClass:[TIMLocationElem class]]) {
+                    TIMLocationElem *localElem = (TIMLocationElem *)elem;
+                    [chat setValue:[NSNumber numberWithDouble: [localElem latitude]] forKey:@"latitude"];
+                    [chat setValue:[NSNumber numberWithDouble: [localElem longitude]]  forKey:@"longitude"];
+                    [chat setValue:[localElem desc] forKey:@"locateDesc"];
+                } else if ([elem isKindOfClass:[TIMFileElem class]]) {
+                    TIMFileElem *fileElem = (TIMFileElem *)elem;
+                    [chat setValue:[fileElem path] forKey:@"filePath"];
+                    [chat setValue:[fileElem uuid]  forKey:@"uuid"];
+                    [chat setValue:[NSNumber numberWithInt: [fileElem fileSize]] forKey:@"fileSize"];
+                    [chat setValue:[fileElem filename] forKey:@"fileName"];
+                } else if ([elem isKindOfClass:[TIMCustomElem class]]) {
+                    TIMCustomElem *cusElem = (TIMCustomElem *)elem;
+                    [chat setValue:[cusElem data] forKey:@"data"];
+                }
+
+                [self commanCallback:chat];
+            }
+        }
+    }
+}
+
+- (NSString*) dictionaryToJson:(NSDictionary *)dic{
+    NSError *parseError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:&parseError];
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+}
+
+- (NSString*) arrayToJson:(NSArray *)array{
+    NSError *parseError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:NSJSONWritingPrettyPrinted error:&parseError];
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+}
+
+- (void)commanCallback:(NSDictionary *) params
+{
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[self dictionaryToJson:params]];
+    [commandResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:self.commonCallbackId];
+}
 
 - (void)successWithCallbackID:(NSString *)callbackID
 {
@@ -272,6 +726,43 @@
 {
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
     [self.commandDelegate sendPluginResult:commandResult callbackId:callbackID];
+}
+
+
+
+/**
+ *  网络连接成功
+ */
+- (void)onConnSucc {
+    
+}
+
+/**
+ *  网络连接失败
+ *
+ *  @param code 错误码
+ *  @param err  错误描述
+ */
+- (void)onConnFailed:(int)code err:(NSString*)err {
+    
+}
+
+/**
+ *  网络连接断开（断线只是通知用户，不需要重新登陆，重连以后会自动上线）
+ *
+ *  @param code 错误码
+ *  @param err  错误描述
+ */
+- (void)onDisconnect:(int)code err:(NSString*)err{
+    
+}
+
+
+/**
+ *  连接中
+ */
+- (void)onConnecting{
+    
 }
 
 @end

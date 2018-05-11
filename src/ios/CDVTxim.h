@@ -12,9 +12,10 @@
 //#import "WXApi.h"
 //#import "WXApiObject.h"
 
-@interface CDVTxim:CDVPlugin <TIMConnListener>
+@interface CDVTxim:CDVPlugin <TIMConnListener,TIMMessageListener, TIMRefreshListener, TIMMessageRevokeListener>
 
 @property (nonatomic, strong) NSString *currentCallbackId;
+@property (nonatomic, strong) NSString *commonCallbackId;
 @property (nonatomic, strong) TIMConversation *conversation;
 @property (nonatomic, strong) IMALoginParam *_loginParam;
 // @property (nonatomic, strong) IMAConversationManager *_conversationMgr;
@@ -22,8 +23,14 @@
 - (void)initSdk:(CDVInvokedUrlCommand *)command;
 - (void)login:(CDVInvokedUrlCommand *)command;
 - (void)logout:(CDVInvokedUrlCommand *)command;
+- (void)registerNewMessageListerner:(CDVInvokedUrlCommand *)command;
+- (void)deleteFriend:(CDVInvokedUrlCommand *)command;
 - (void)requestAddFriend:(CDVInvokedUrlCommand *)command;
-
+- (void)agreeAddFriend:(CDVInvokedUrlCommand *)command;
+- (void)refuseAddFriend:(CDVInvokedUrlCommand *)command;
+- (void)setFriendBlackList:(CDVInvokedUrlCommand *)command;
+- (void)sendMessageToUser:(CDVInvokedUrlCommand *)command;
+- (void)getFriendList:(CDVInvokedUrlCommand *)command;
 // 初始化
 // 登录
 // 退出登录
