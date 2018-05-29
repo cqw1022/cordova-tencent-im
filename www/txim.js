@@ -1,5 +1,5 @@
 var exec = require('cordova/exec');
-
+    
 module.exports = {
 
     init: function (sdkAppId, accountType, messageCallback) {
@@ -173,7 +173,7 @@ module.exports = {
 
     sendText: function (identifier, text, isGroup) {
         return new Promise((resolve,reject)=>{
-            var msg = {text: text}
+            var msg = {text: text, identifier: identifier.toString()}
             if (isGroup) {
                 msg.identifierType = 'group'
             } else {
@@ -193,70 +193,90 @@ module.exports = {
     },
 
 
+    sendFace: function (identifier, faceId, isGroup) {
+                return new Promise((resolve,reject)=>{
+                        var msg = {faceId: faceId.toString(), identifier: identifier.toString()}
+                        if (isGroup) {
+                        msg.identifierType = 'group'
+                        } else {
+                        msg.identifierType = 'user'
+                        }
+                        exec(function(){
+                            resolve({
+                                    isSuccess: true
+                                    })
+                            }, function(errorCode){
+                            resolve({
+                                    isSuccess: false,
+                                    errorCode: errorCode
+                                    })
+                            }, "Txim", "sendMessageToUser", [msg]);
+                        })
+    },
 
-    sendCustomData: function (identifier, customData, isGroup) {
+        sendCustomData: function (identifier, customData, isGroup) {
         return new Promise((resolve,reject)=>{
-            var msg = {customData: customData}
-            if (isGroup) {
-                msg.identifierType = 'group'
-            } else {
-                msg.identifierType = 'user'
-            }
-            exec(function(){
-                resolve({
-                    isSuccess: true
-                })
-            }, function(errorCode){
-                resolve({
-                    isSuccess: false,
-                    errorCode: errorCode
-                })
-            }, "Txim", "sendMessageToUser", [msg]);
-        })
-    },
-
-
-    sendImage: function (identifier, imagePath, isGroup) {
+                            var msg = {customData: customData, identifier: identifier.toString()}
+                            if (isGroup) {
+                            msg.identifierType = 'group'
+                            } else {
+                            msg.identifierType = 'user'
+                            }
+                            exec(function(){
+                                resolve({
+                                        isSuccess: true
+                                        })
+                                }, function(errorCode){
+                                resolve({
+                                        isSuccess: false,
+                                        errorCode: errorCode
+                                        })
+                                }, "Txim", "sendMessageToUser", [msg]);
+                            })
+        },
+        
+        
+        sendImage: function (identifier, imagePath, isGroup) {
         return new Promise((resolve,reject)=>{
-            var msg = {imagePath: imagePath}
-            if (isGroup) {
-                msg.identifierType = 'group'
-            } else {
-                msg.identifierType = 'user'
-            }
-            exec(function(){
-                resolve({
-                    isSuccess: true
-                })
-            }, function(errorCode){
-                resolve({
-                    isSuccess: false,
-                    errorCode: errorCode
-                })
-            }, "Txim", "sendMessageToUser", [msg]);
-        })
-    },
-
-    sendAudio: function (identifier, audioPath, length, isGroup) {
+                            var msg = {imagePath: imagePath, identifier: identifier.toString()}
+                            if (isGroup) {
+                            msg.identifierType = 'group'
+                            } else {
+                            msg.identifierType = 'user'
+                            }
+                            exec(function(){
+                                resolve({
+                                        isSuccess: true
+                                        })
+                                }, function(errorCode){
+                                resolve({
+                                        isSuccess: false,
+                                        errorCode: errorCode
+                                        })
+                                }, "Txim", "sendMessageToUser", [msg]);
+                            })
+        },
+        
+        sendAudio: function (identifier, audioPath, length, isGroup) {
         return new Promise((resolve,reject)=>{
-            var msg = {audioPath: audioPath, length: length.toString()}
-            if (isGroup) {
-                msg.identifierType = 'group'
-            } else {
-                msg.identifierType = 'user'
-            }
-            exec(function(){
-                resolve({
-                    isSuccess: true
-                })
-            }, function(errorCode){
-                resolve({
-                    isSuccess: false,
-                    errorCode: errorCode
-                })
-            }, "Txim", "sendMessageToUser", [msg]);
-        })
-    },
+                            var msg = {audioPath: audioPath, length: length.toString(), identifier: identifier.toString()}
+                            if (isGroup) {
+                            msg.identifierType = 'group'
+                            } else {
+                            msg.identifierType = 'user'
+                            }
+                            exec(function(){
+                                resolve({
+                                        isSuccess: true
+                                        })
+                                }, function(errorCode){
+                                resolve({
+                                        isSuccess: false,
+                                        errorCode: errorCode
+                                        })
+                                }, "Txim", "sendMessageToUser", [msg]);
+                            })
+        },
 
     setSelfProfile: function (profileInfo) {
         return new Promise((resolve,reject)=>{
@@ -273,20 +293,25 @@ module.exports = {
         })
     },
 
+    
     getSelfProfile: function () {
-        return new Promise((resolve,reject)=>{
-            exec(function(profileStr){
-                resolve({
-                    isSuccess: true
-                    profile: JSON.parse(profileStr)
-                })
-            }, function(errorCode){
-                resolve({
-                    isSuccess: false,
-                    errorCode: errorCode
-                })
-            }, "Txim", "getSelfProfile", []);
-        })
+    return new Promise((resolve,reject)=>{
+                        exec(function(profileStr){
+                            var profile = JSON.parse(profileStr)
+                            profile.custom = JSON.parse(profile.custom)
+                            resolve({
+                                    isSuccess: true,
+                                    profile: profile
+                                    })
+                            }, function(errorCode){
+                            resolve({
+                                    isSuccess: false,
+                                    errorCode: errorCode
+                                    })
+                            }, "Txim", "getSelfProfile", []);
+                        })
     }
 
 };
+
+    

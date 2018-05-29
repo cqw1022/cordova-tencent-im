@@ -186,6 +186,20 @@
     }];
 }
 
+- (void)sendFace:(TIMConversation*)conversation faceId:(NSString *)faceId callbackId: (NSString *) callbackId
+{
+    TIMFaceElem *elem = [[TIMFaceElem alloc] init];
+    elem.index = [faceId intValue];
+    TIMMessage *msg = [[TIMMessage alloc] init];
+    [msg addElem:elem];
+    
+    [conversation sendMessage:msg succ:^(){
+        [self successWithCallbackID:callbackId];
+    } fail:^(int code, NSString *msg) {
+        [self failWithCallbackID:callbackId withCode:code];
+    }];
+}
+
 - (void)sendAudioRecord:(TIMConversation*)conversation soundSavePath:(NSString *)soundSavePath soundDur:(int) dur callbackId: (NSString *) callbackId
 {
     TIMSoundElem *elem = [[TIMSoundElem alloc] init];
@@ -220,7 +234,11 @@
     [msg addElem:elem];
     
     [conversation sendMessage:msg succ:^(){
-        [self successWithCallbackID:callbackId];
+        
+        NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+        [params setValue:[NSString stringWithFormat:@"%d",elem.taskId] forKey:@"taskid"];
+        
+        [self successWithCallbackID:callbackId withMessage:[self dictionaryToJson:params]];
     } fail:^(int code, NSString *msg) {
         [self failWithCallbackID:callbackId withCode:code];
     }];
@@ -279,6 +297,13 @@
         return;
     }
     
+    if ([params objectForKey:@"faceId"])
+    {
+        NSString *text = [params objectForKey:@"faceId"];
+        [self sendFace:conversation faceId:text callbackId:command.callbackId];
+        return;
+    }
+    
     if ([params objectForKey:@"customData"])
     {
         NSString *customData = [params objectForKey:@"customData"];
@@ -323,7 +348,16 @@
 - (void)getFriendList:(CDVInvokedUrlCommand *)command{
     
     [[TIMFriendshipManager sharedInstance] getFriendList:^(NSArray *friends) {
-        [self successWithCallbackID:command.callbackId withMessage:[self arrayToJson:friends]];
+        NSMutableArray *fris =[[NSMutableArray alloc] init];
+        for(TIMUserProfile* friend in friends){
+            //自定义code
+            NSMutableDictionary* fri = [[NSMutableDictionary alloc] init];
+            [fri setValue:friend.identifier forKey:@"identifier"];
+            [fri setValue:friend.faceURL forKey:@"faceURL"];
+            [fri setValue:friend.nickname forKey:@"nickname"];
+            [fris addObject:fri];
+        }
+        [self successWithCallbackID:command.callbackId withMessage:[self arrayToJson:fris]];
     } fail:^(int code, NSString *err) {
         [self failWithCallbackID:command.callbackId withCode:code];
     }];
@@ -424,7 +458,7 @@
         [self successWithCallbackID:command.callbackId];
     } fail:^(int code, NSString * err) {
 //        NSLog(@"add friend fail: code=%d err=%@", code, err);
-        [self failWithCallbackID:command.callbackId withError: err];
+        [self failWithCallbackID:command.callbackId withMessage: err];
     }];
 //    - (int)delFriend:(TIMDelFriendType)delType users:(NSArray*)users succ:(TIMFriendSucc)succ fail:(TIMFail)fail;
 }
@@ -508,7 +542,7 @@
          }
      } fail:^(int code, NSString * err) {
          NSLog(@"add friend fail: code=%d err=%@", code, err);
-         [self failWithCallbackID:command.callbackId withError: err];
+         [self failWithCallbackID:command.callbackId withMessage: err];
      }];
 
  }
@@ -566,7 +600,7 @@
     
     
     NSString *allowFlag = nil;
-    if ([params objectForKey:@"allowFlag"])
+    if (![params objectForKey:@"allowFlag"])
     {
         [self failWithCallbackID:command.callbackId withMessage:@"allowFlag 参数错误"];
         return ;
@@ -574,6 +608,13 @@
     allowFlag = [params objectForKey:@"allowFlag"];
     
     
+    NSDictionary *custom = nil;
+    if (![params objectForKey:@"custom"])
+    {
+        [self failWithCallbackID:command.callbackId withMessage:@"custom 参数错误"];
+        return ;
+    }
+    custom = [params objectForKey:@"custom"];
     
     TIMFriendProfileOption * option = [[TIMFriendProfileOption alloc] init];
     option.friendFlags = 0xffff;
@@ -585,13 +626,18 @@
     } else {
         profile.allowType = TIM_FRIEND_NEED_CONFIRM;
     }
-
-    if ([params objectForKey:@"custom"])
-    {
-        NSString *custom = nil;
-        custom = [params objectForKey:@"custom"];
-        profile.customInfo = [NSJSONSerialization JSONObjectWithData:[custom dataUsingEncoding:NSUTF8StringEncoding] options:0 error: nil];
+    
+//    NSString *str = @"a";
+//    NSDictionary* dict = [[NSDictionary alloc] initWithObjectsAndKeys:[@"a" dataUsingEncoding:NSUTF8StringEncoding], @"init", nil];
+//    [dict removeObjectForKey:@"init"];
+    NSMutableDictionary *customInfo = [[NSMutableDictionary alloc] init];
+//    bool isInit = false;
+    for (id key in custom) {
+        NSString *str = [custom objectForKey:key];
+        [customInfo setValue:[str dataUsingEncoding:NSUTF8StringEncoding] forKey:key];
     }
+//    profile.customInfo =  customInfo;
+    
     //    profile.selfSignature = [NSData dataWithBytes:"1234" length:4];
     //    profile.gender = TIM_GENDER_MALE;
     //    profile.birthday = 12345;
@@ -607,7 +653,7 @@
 - (void)getSelfProfile:(CDVInvokedUrlCommand *)command{
     [[TIMFriendshipManager sharedInstance] getSelfProfile:^(TIMUserProfile * profile) {
 //        NSLog(@"GetSelfProfile identifier=%@ nickname=%@ allowType=%d", profile.identifier, profile.nickname, profile.allowType);
-        NSDictionary *profileDic = [[NSDictionary alloc] init];
+        NSMutableDictionary *profileDic = [[NSMutableDictionary alloc] init];
         if (profile.allowType == TIM_FRIEND_ALLOW_ANY) {
             [profileDic setValue:@"allow" forKey:@"allowType"];
         } else if (profile.allowType == TIM_FRIEND_DENY_ANY) {
@@ -661,7 +707,7 @@
 //                            isContinue = NO;
                             for (TIMSNSChangeInfo * info in [system_elem users]) {
 //                                NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
-                                NSDictionary *addFriendReq = [[NSDictionary alloc] init];
+                                NSMutableDictionary *addFriendReq = [[NSMutableDictionary alloc] init];
                                 [addFriendReq setValue:@"addFriendReq" forKey:@"type"];
                                 [addFriendReq setValue:[info identifier] forKey:@"identifier"];
                                 [addFriendReq setValue:[info wording] forKey:@"wording"];
@@ -674,7 +720,7 @@
 //                        isContinue = NO;
                         for (TIMSNSChangeInfo * info in [system_elem users]) {
 //                            NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
-                            NSDictionary *addFriend = [[NSDictionary alloc] init];
+                            NSMutableDictionary *addFriend = [[NSMutableDictionary alloc] init];
                             [addFriend setValue:@"addFriend" forKey:@"type"];
                             [addFriend setValue:[info identifier] forKey:@"identifier"];
                             [self commanCallback:addFriend];
@@ -682,7 +728,7 @@
                     } else if (type == TIM_SNS_SYSTEM_DEL_FRIEND) {
                         for (TIMSNSChangeInfo * info in [system_elem users]) {
 //                            NSLog(@"user %@ request friends: reason=%@", [info identifier], [info wording]);
-                            NSDictionary *delFriend = [[NSDictionary alloc] init];
+                            NSMutableDictionary *delFriend = [[NSMutableDictionary alloc] init];
                             [delFriend setValue:@"delFriend" forKey:@"type"];
                             [delFriend setValue:[info identifier] forKey:@"identifier"];
                             [self commanCallback:delFriend];
@@ -703,7 +749,7 @@
             for (int i = 0; i < elemCount; i++)
             {
                 TIMElem* elem = [msg getElem:i];
-                NSDictionary *chat = [[NSDictionary alloc] init];
+                NSMutableDictionary *chat = [[NSMutableDictionary alloc] init];
                 [chat setValue:@"chat" forKey:@"type"];
                 [chat setValue:receiver forKey:@"receiver"];
 
@@ -718,6 +764,20 @@
                 } else if ([elem isKindOfClass:[TIMImageElem class]]) {
                     TIMImageElem *imgElem = (TIMImageElem *)elem;
                     [chat setValue:[imgElem path] forKey:@"imgUrl"];
+                    if (imgElem.imageList.count > 0)
+                    {
+                        for (TIMImage *timImage in imgElem.imageList)
+                        {
+                            if (timImage.type == TIM_IMAGE_TYPE_THUMB)
+                            {
+                                [chat setValue:[timImage url] forKey:@"thumbUrl"];
+                            } else if (timImage.type == TIM_IMAGE_TYPE_LARGE) {
+                                [chat setValue:[timImage url] forKey:@"largeUrl"];
+                            } else {
+                                [chat setValue:[timImage url] forKey:@"originUrl"];
+                            }
+                        }
+                    }
                 } else if ([elem isKindOfClass:[TIMFaceElem class]]) {
                     TIMFaceElem *faceElem = (TIMFaceElem *)elem;
                     [chat setValue:[NSNumber numberWithInteger: [faceElem index]] forKey:@"faceId"];
@@ -746,10 +806,11 @@
     }
 }
 
-- (NSString*) dictionaryToJson:(NSDictionary *)dic{
+- (NSString*) dictionaryToJson:(NSMutableDictionary *)dic{
     NSError *parseError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:&parseError];
-    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSString * str = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return str;
 }
 
 - (NSString*) arrayToJson:(NSArray *)array{
